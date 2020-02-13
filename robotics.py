@@ -7,6 +7,8 @@ Created on Tue Feb 11 17:51:28 2020
 
 import numpy as math
 import pygame
+import matplotlib
+import matplotlib.pyplot as plt
 
 # Define some colors
 BLACK = (0, 0, 0)
@@ -42,21 +44,23 @@ b = 31.5 #cm
 c = 7 #cm
 
 #specified operation
-operationHeight = 15 #cm
-startAngle = 30 #deg
-endAngle = 130 #deg
+operationHeight = -7 #cm
+startAngle = 0 #deg
+endAngle = 50 #deg
 
 #graphics
 scaleFactor = 5
 lineWidth = 5
-grid = True
-gridTileSize = 7 #cm
+doGrid = True
+doPlot = True
+gridTileSize = 5 #cm
 fps = 60
-cyclesPerSec=.25
+cyclesPerSec=.2
 
-t1=t2=t3=ar=az=br=bz=cr=cz=count=deg=0
+t1=t2=t3=ar=az=br=bz=cr=cz=frameCount=deg=0
 POI=[0,0]
 circles=[]
+points=[]
 
 img = pygame.image.load("""marquette robotics.png""")
 imgScaled = pygame.transform.scale(img, (200, 66))
@@ -65,8 +69,8 @@ def calculateAngles():
     global t1,t2,t3,deg
     deg += (360*cyclesPerSec)/fps
     t1= -(((endAngle-startAngle)/2)*math.cos(math.deg2rad(deg)))+startAngle+(endAngle-startAngle)/2
-    if -1 <= (-operationHeight/b)+(a/b)*math.cos(math.deg2rad(90-t1)) <= 1:
-        t2= (math.rad2deg(math.arccos((-operationHeight/b)+(a/b)*math.cos(math.deg2rad(90-t1))))-t1-90)
+    if -1 <= (-operationHeight/b)+(a/b)*math.sin(math.deg2rad(t1)) <= 1:
+        t2= (math.rad2deg(math.arccos((-operationHeight/b)+(a/b)*math.sin(math.deg2rad(t1))))-t1-90)
         t3=-t2-t1
         calculateComponents();
     else:
@@ -113,7 +117,7 @@ while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
-    count+=1
+    frameCount+=1
 
     calculateAngles()
 
@@ -130,13 +134,13 @@ while not done:
     cvector.y = cz*scaleFactor
 
     POI = center+avector+bvector+cvector
-    for loc in circles:
-        pygame.draw.circle(screen, GRAY, [int(loc.x),int(loc.y)], 1)
+    for cir in circles:
+        pygame.draw.circle(screen, GRAY, [int(cir.x),int(cir.y)], 1)
 
-    if grid:
+    if doGrid:
         drawGrid()
 
-    if count<=(360*cyclesPerSec)*3:
+    if frameCount<=(360*cyclesPerSec)*3:
         circles.append(POI)
         circles.append(center+avector)
 
@@ -159,9 +163,26 @@ while not done:
     overlay("Angle 2: " + str(int(t2)) + "deg", 100, 110, GREEN)
     overlay("Angle 3: " + str(int(t3)) + "deg", 100, 130, BLUE)
 #    print("t", t1, " r", finalRadius)
+    if (-1 <= (-operationHeight/b)+(a/b)*math.cos(math.deg2rad(90-t1)) <= 1) and frameCount<fps/cyclesPerSec and doPlot:
+        points.append((t1,finalRadius))
     screen.blit(imgScaled, (WIDTH-200, 0))
 
     pygame.display.update()
     clock.tick(fps)
+if doPlot:
+    angles=[]
+    radii=[]
+    fig, ax = plt.subplots()
+    for p in points:
+        while(p[0]>360):
+            p=(p[0]-360,p[1])
+        angles.append(p[0])
+        radii.append(p[1])
+    ax.scatter(angles, radii)
+    ax.set(xlabel='Shoulder angle (deg)', ylabel='POI Radius',
+           title='Megarm Motion')
+    ax.grid()
+    fig.savefig("test.png")
+    plt.show()
 
 pygame.quit()
