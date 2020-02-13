@@ -15,6 +15,7 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 GRAY =(100, 100, 100)
+LIGHTGRAY=(50,50,50)
 
 pygame.init()
 
@@ -36,18 +37,22 @@ font = pygame.font.Font('freesansbold.ttf', 15)
 done = False
 
 #lenghs of each arm portion
-a = 25
-b = 35
-c = 7
+a = 35 #cm
+b = 45 #cm
+c = 10 #cm
 
 #specified operation
-operationHeight = -10
-startAngle = 0
-endAngle = 60
+operationHeight = -10 #cm
+startAngle = 0 #deg
+endAngle = 75 #deg
 
 #graphics
-scaleFactor = 5
+scaleFactor = 3
 lineWidth = 5
+grid = True
+gridTileSize = 20 #cm
+fps = 60
+cyclesPerSec=1
 
 t1=t2=t3=ar=az=br=bz=cr=cz=count=deg=0
 POI=[0,0]
@@ -57,9 +62,9 @@ circles=[]
 img = pygame.image.load("""marquette robotics.png""")
 imgScaled = pygame.transform.scale(img, (200, 66))
 
-def calculateAngles1():
+def calculateAngles():
     global t1,t2,t3,deg
-    deg += 1
+    deg += (360*cyclesPerSec)/fps
     t1= -(((endAngle-startAngle)/2)*math.cos(math.deg2rad(deg)))+startAngle+(endAngle-startAngle)/2
     if -1 <= (-operationHeight/b)+(a/b)*math.cos(math.deg2rad(90-t1)) <= 1:
         t2= (math.rad2deg(math.arccos((-operationHeight/b)+(a/b)*math.cos(math.deg2rad(90-t1))))-t1-90)
@@ -67,15 +72,6 @@ def calculateAngles1():
         calculateComponents();
     else:
         print("arm can not reach desired point")
-
-def calculateAngles2():
-    global t1,t2,t3,deg
-    deg += 5
-    sineMovement=math.sin(math.deg2rad(deg))
-    t1+=sineMovement*1
-    t2+=sineMovement*1
-    t3+=sineMovement*1
-    calculateComponents();
 
 def calculateComponents():
     global ar,az,br,bz,cr,cz
@@ -100,6 +96,15 @@ def overlay(t, x, y):
 
     screen.blit(text, textRect)
 
+def drawGrid():
+    for i in range(0,int(WIDTH/(scaleFactor*gridTileSize))):
+        gridX = int(i*(scaleFactor*gridTileSize))
+        pygame.draw.line(screen, LIGHTGRAY, (gridX, 0), (gridX, HEIGHT), 1)
+
+    for j in range(0,int(HEIGHT/(scaleFactor*gridTileSize))):
+        gridY = int(j*(scaleFactor*gridTileSize))
+        pygame.draw.line(screen, LIGHTGRAY, (0, gridY), (WIDTH, gridY), 1)
+
 while not done:
     # --- Main event loop
     for event in pygame.event.get():
@@ -107,7 +112,7 @@ while not done:
             done = True
     count+=1
 
-    calculateAngles1()
+    calculateAngles()
 
     screen.fill(BLACK)
 
@@ -124,6 +129,10 @@ while not done:
     POI = center+avector+bvector+cvector
     for loc in circles:
         pygame.draw.circle(screen, GRAY, [int(loc.x),int(loc.y)], 1)
+
+    if grid:
+        drawGrid()
+
     if count<=1000:
         circles.append(POI)
         circles.append(center+avector)
@@ -140,12 +149,13 @@ while not done:
 
     finalRadius = (POI.x-center.x)/scaleFactor
     finalHeight = -(POI.y-center.y)/scaleFactor
-    overlay("Radius: " + str(int(finalRadius)) + "cm", 100, 100)
-    overlay("Height: " + str(int(finalHeight)) + "cm", 100, 120)
-    print("t", t1, " r", finalRadius)
+    overlay("Grid tile is "+str(gridTileSize)+"cm by "+str(gridTileSize)+"cm", 100, 30)
+    overlay("Radius: " + str(int(finalRadius)) + "cm", 100, 50)
+    overlay("Height: " + str(int(finalHeight)) + "cm", 100, 70)
+#    print("t", t1, " r", finalRadius)
     screen.blit(imgScaled, (WIDTH-200, 0))
 
     pygame.display.update()
-    clock.tick(60)
+    clock.tick(fps)
 
 pygame.quit()
