@@ -20,8 +20,8 @@ LIGHTGRAY=(50,50,50)
 pygame.init()
 
 # Set the width and height of the screen [width, height]
-WIDTH = 900
-HEIGHT = 700
+WIDTH = 800
+HEIGHT = 600
 center = pygame.math.Vector2()
 center.x = WIDTH/2
 center.y = HEIGHT/2
@@ -37,26 +37,25 @@ font = pygame.font.Font('freesansbold.ttf', 15)
 done = False
 
 #lenghs of each arm portion
-a = 35 #cm
-b = 45 #cm
-c = 10 #cm
+a = 31.5 #cm
+b = 31.5 #cm
+c = 7 #cm
 
 #specified operation
-operationHeight = -10 #cm
-startAngle = 0 #deg
-endAngle = 75 #deg
+operationHeight = 15 #cm
+startAngle = 30 #deg
+endAngle = 130 #deg
 
 #graphics
-scaleFactor = 3
+scaleFactor = 5
 lineWidth = 5
 grid = True
-gridTileSize = 20 #cm
+gridTileSize = 7 #cm
 fps = 60
-cyclesPerSec=1
+cyclesPerSec=.25
 
 t1=t2=t3=ar=az=br=bz=cr=cz=count=deg=0
 POI=[0,0]
-
 circles=[]
 
 img = pygame.image.load("""marquette robotics.png""")
@@ -88,8 +87,8 @@ def calculateComponents():
     cr = c*math.sin(tc)
     cz = c*math.cos(tc)
 
-def overlay(t, x, y):
-    text = font.render(t, True, WHITE, BLACK)
+def overlay(t, x, y, color):
+    text = font.render(t, True, color, BLACK)
 
     textRect = text.get_rect()
     textRect.center = (x, y)
@@ -97,13 +96,17 @@ def overlay(t, x, y):
     screen.blit(text, textRect)
 
 def drawGrid():
-    for i in range(0,int(WIDTH/(scaleFactor*gridTileSize))):
-        gridX = int(i*(scaleFactor*gridTileSize))
-        pygame.draw.line(screen, LIGHTGRAY, (gridX, 0), (gridX, HEIGHT), 1)
+    for i in range(0,int(WIDTH/(scaleFactor*gridTileSize*2))+1):
+        gridRight = int(i*(scaleFactor*gridTileSize))+center.x
+        gridLeft = center.x-int(i*(scaleFactor*gridTileSize))
+        pygame.draw.line(screen, LIGHTGRAY, (gridRight, 0), (gridRight, HEIGHT), 1)
+        pygame.draw.line(screen, LIGHTGRAY, (gridLeft, 0), (gridLeft, HEIGHT), 1)
 
-    for j in range(0,int(HEIGHT/(scaleFactor*gridTileSize))):
-        gridY = int(j*(scaleFactor*gridTileSize))
-        pygame.draw.line(screen, LIGHTGRAY, (0, gridY), (WIDTH, gridY), 1)
+    for j in range(0,int(HEIGHT/(scaleFactor*gridTileSize*2))+1):
+        gridDown = int(j*(scaleFactor*gridTileSize))+center.y
+        gridUp = center.y-int(j*(scaleFactor*gridTileSize))
+        pygame.draw.line(screen, LIGHTGRAY, (0, gridUp), (WIDTH, gridUp), 1)
+        pygame.draw.line(screen, LIGHTGRAY, (0, gridDown), (WIDTH, gridDown), 1)
 
 while not done:
     # --- Main event loop
@@ -133,7 +136,7 @@ while not done:
     if grid:
         drawGrid()
 
-    if count<=1000:
+    if count<=(360*cyclesPerSec)*3:
         circles.append(POI)
         circles.append(center+avector)
 
@@ -149,9 +152,12 @@ while not done:
 
     finalRadius = (POI.x-center.x)/scaleFactor
     finalHeight = -(POI.y-center.y)/scaleFactor
-    overlay("Grid tile is "+str(gridTileSize)+"cm by "+str(gridTileSize)+"cm", 100, 30)
-    overlay("Radius: " + str(int(finalRadius)) + "cm", 100, 50)
-    overlay("Height: " + str(int(finalHeight)) + "cm", 100, 70)
+    overlay("Grid tile is "+str(gridTileSize)+"cm by "+str(gridTileSize)+"cm", 100, 30, WHITE)
+    overlay("Radius: " + str(int(finalRadius)) + "cm", 100, 50, WHITE)
+    overlay("Height: " + str(int(finalHeight)) + "cm", 100, 70, WHITE)
+    overlay("Angle 1: " + str(int(t1)) + "deg", 100, 90, RED)
+    overlay("Angle 2: " + str(int(t2)) + "deg", 100, 110, GREEN)
+    overlay("Angle 3: " + str(int(t3)) + "deg", 100, 130, BLUE)
 #    print("t", t1, " r", finalRadius)
     screen.blit(imgScaled, (WIDTH-200, 0))
 
