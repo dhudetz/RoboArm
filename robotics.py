@@ -26,7 +26,7 @@ center.x = WIDTH/2
 center.y = HEIGHT/2
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
-pygame.display.set_caption("Megarm Simulator 1.0")
+pygame.display.set_caption("MegarmModel")
 
 clock = pygame.time.Clock()
 
@@ -36,20 +36,20 @@ font = pygame.font.Font('freesansbold.ttf', 15)
 done = False
 
 #lenghs of each arm portion
-a = 30
-b = 40
-c = 10
+a = 25
+b = 35
+c = 7
 
-#desired height of operation
-z = 20
+#specified operation
+operationHeight = -10
+startAngle = 0
+endAngle = 60
 
-#starting angles of each axis
-t1 = 0
-t2 = 0
-t3 = 0
+#graphics
+scaleFactor = 5
+lineWidth = 5
 
-ar=az=br=bz=cr=cz=count=0
-deg=scaleFactor=0
+t1=t2=t3=ar=az=br=bz=cr=cz=count=deg=0
 POI=[0,0]
 
 circles=[]
@@ -60,12 +60,10 @@ imgScaled = pygame.transform.scale(img, (200, 66))
 def calculateAngles1():
     global t1,t2,t3,deg
     deg += 1
-    sineMovement=math.sin(math.deg2rad(deg))
-    t1+=sineMovement*1
-    if -1 <= (-z/b)+(a/b)*math.cos(math.deg2rad(90-t1)) <= 1:
-        t2= (math.rad2deg(math.arccos((-z/b)+(a/b)*math.cos(math.deg2rad(90-t1))))-t1-90)
+    t1= -(((endAngle-startAngle)/2)*math.cos(math.deg2rad(deg)))+startAngle+(endAngle-startAngle)/2
+    if -1 <= (-operationHeight/b)+(a/b)*math.cos(math.deg2rad(90-t1)) <= 1:
+        t2= (math.rad2deg(math.arccos((-operationHeight/b)+(a/b)*math.cos(math.deg2rad(90-t1))))-t1-90)
         t3=-t2-t1
-        print
         calculateComponents();
     else:
         print("arm can not reach desired point")
@@ -113,9 +111,6 @@ while not done:
 
     screen.fill(BLACK)
 
-    scaleFactor = 5
-    lineWidth = 5
-
     avector = pygame.math.Vector2()
     avector.x = ar*scaleFactor
     avector.y = az*scaleFactor
@@ -131,6 +126,7 @@ while not done:
         pygame.draw.circle(screen, GRAY, [int(loc.x),int(loc.y)], 1)
     if count<=1000:
         circles.append(POI)
+        circles.append(center+avector)
 
     pygame.draw.line(screen, RED, center, center+avector, lineWidth)
     pygame.draw.line(screen, GREEN, center+avector, center+avector+bvector, lineWidth)
@@ -138,12 +134,15 @@ while not done:
     #pygame.draw.line(screen, GRAY, center, POI, 1)
 
     pygame.draw.circle(screen, WHITE, [int(POI.x),int(POI.y)], 3)
+    pygame.draw.circle(screen, WHITE, [int(center.x),int(center.y)], 3)
+    pygame.draw.circle(screen, WHITE, [int((center+avector).x),int((center+avector).y)], 3)
+    pygame.draw.circle(screen, WHITE, [int((center+avector+bvector).x),int((center+avector+bvector).y)], 3)
+
     finalRadius = (POI.x-center.x)/scaleFactor
     finalHeight = -(POI.y-center.y)/scaleFactor
-    print(int(finalRadius),": a",t1," b",t2," c",t3)
     overlay("Radius: " + str(int(finalRadius)) + "cm", 100, 100)
     overlay("Height: " + str(int(finalHeight)) + "cm", 100, 120)
-
+    print("t", t1, " r", finalRadius)
     screen.blit(imgScaled, (WIDTH-200, 0))
 
     pygame.display.update()
