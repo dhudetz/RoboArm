@@ -9,6 +9,7 @@ import numpy as math
 import pygame
 import matplotlib
 import matplotlib.pyplot as plt
+import threading
 
 # Define some colors
 BLACK = (0, 0, 0)
@@ -22,7 +23,7 @@ LIGHTGRAY=(50,50,50)
 pygame.init()
 
 # Set the width and height of the screen [width, height]
-WIDTH = 800
+WIDTH = 600
 HEIGHT = 600
 center = pygame.math.Vector2()
 center.x = WIDTH/2
@@ -43,38 +44,69 @@ a = 31.5 #cm
 b = 31.5 #cm
 c = 7 #cm
 
-#specified operation
-operationHeight = -7 #cm
+#specified
+operationHeight = 0 #cm
 startAngle = 0 #deg
-endAngle = 50 #deg
+endAngle = 360 #deg
 
 #graphics
-scaleFactor = 5
+scaleFactor = 2.5
 lineWidth = 5
 doGrid = True
-doPlot = True
-gridTileSize = 5 #cm
+doPlot = False
+gridTileSize = 20 #cm
 fps = 60
-cyclesPerSec=.2
+cyclesPerSec=.25
 
-t1=t2=t3=ar=az=br=bz=cr=cz=frameCount=deg=0
+t1=t2=t3=ar=az=br=bz=cr=cz=frameCount=deg=deg2=0
 POI=[0,0]
 circles=[]
 points=[]
 
-img = pygame.image.load("""marquette robotics.png""")
+img = pygame.image.load("marquette robotics.png")
 imgScaled = pygame.transform.scale(img, (200, 66))
 
+def userInputLoop():
+    global a, b, c, operationHeight, cyclesPerSec, done, scaleFactor, endAngle, startAngle,circles
+    print("\nSyntax to change height to 10cm: \"z 10\"\nEnter q to quit.")
+    while not done:
+        userInput = input("What would you like to change? ")
+        words=userInput.split()
+        if len(words)==2:
+            circles=[]
+            print("Attempting adjust...")
+            if words[0]=="a":
+                a=float(words[1])
+            elif words[0]=="b":
+                b=float(words[1])
+            elif words[0]=="c":
+                c=float(words[1])
+            elif words[0]=="z":
+                operationHeight=float(words[1])
+            elif words[0]=="cps":
+                cyclesPerSec=float(words[1])
+            elif words[0]=="sa":
+                startAngle=float(words[1])
+            elif words[0]=="ea":
+                endAngle=float(words[1])
+            elif words[0]=="sf":
+                scaleFactor=float(words[1])
+            else:
+                print("Sorry, can't do that.")
+        elif words[0]=="q":
+            done=True
+            pygame.quit()
+        else:
+            print("Improper syntax")
+
 def calculateAngles():
-    global t1,t2,t3,deg
+    global t1,t2,t3,deg,deg2
     deg += (360*cyclesPerSec)/fps
     t1= -(((endAngle-startAngle)/2)*math.cos(math.deg2rad(deg)))+startAngle+(endAngle-startAngle)/2
     if -1 <= (-operationHeight/b)+(a/b)*math.sin(math.deg2rad(t1)) <= 1:
         t2= (math.rad2deg(math.arccos((-operationHeight/b)+(a/b)*math.sin(math.deg2rad(t1))))-t1-90)
         t3=-t2-t1
         calculateComponents();
-    else:
-        print("arm can not reach desired point")
 
 def calculateComponents():
     global ar,az,br,bz,cr,cz
@@ -112,6 +144,12 @@ def drawGrid():
         pygame.draw.line(screen, LIGHTGRAY, (0, gridUp), (WIDTH, gridUp), 1)
         pygame.draw.line(screen, LIGHTGRAY, (0, gridDown), (WIDTH, gridDown), 1)
 
+try:
+    userThread = threading.Thread(target=userInputLoop, args=())
+    userThread.start()
+except:
+    print("Error: unable to start thread")
+
 while not done:
     # --- Main event loop
     for event in pygame.event.get():
@@ -140,7 +178,8 @@ while not done:
     if doGrid:
         drawGrid()
 
-    if frameCount<=(360*cyclesPerSec)*3:
+    #if frameCount<fps/cyclesPerSec:
+    if frameCount<10000:
         circles.append(POI)
         circles.append(center+avector)
 
@@ -179,10 +218,10 @@ if doPlot:
         angles.append(p[0])
         radii.append(p[1])
     ax.scatter(angles, radii)
-    ax.set(xlabel='Shoulder angle (deg)', ylabel='POI Radius',
+    ax.set(xlabel='radii (cm)', ylabel='angles (deg)',
            title='Megarm Motion')
     ax.grid()
-    fig.savefig("test.png")
+    fig.savefig("output.png")
     plt.show()
 
 pygame.quit()
