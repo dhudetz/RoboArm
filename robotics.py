@@ -47,7 +47,7 @@ c = 7 #cm
 #specified
 operationHeight = 0 #cm
 startAngle = 0 #deg
-endAngle = 360 #deg
+endAngle = 90 #deg
 
 #graphics
 scaleFactor = 2.5
@@ -67,7 +67,7 @@ img = pygame.image.load("marquette robotics.png")
 imgScaled = pygame.transform.scale(img, (200, 66))
 
 def userInputLoop():
-    global a, b, c, operationHeight, cyclesPerSec, done, scaleFactor, endAngle, startAngle,circles
+    global a,b,c,operationHeight,cyclesPerSec,done,scaleFactor,endAngle,startAngle,circles,gridTileSize
     print("\nSyntax to change height to 10cm: \"z 10\"\nEnter q to quit.")
     while not done:
         userInput = input("What would you like to change? ")
@@ -91,6 +91,8 @@ def userInputLoop():
                 endAngle=float(words[1])
             elif words[0]=="sf":
                 scaleFactor=float(words[1])
+            elif words[0]=="gt":
+                gridTileSize=float(words[1])
             else:
                 print("Sorry, can't do that.")
         elif words[0]=="q":
