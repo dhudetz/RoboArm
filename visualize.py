@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on 2/17/20
-Marquette Robotics Club
-Danny Hudetz
+Created on Tue Feb 11 17:51:28 2020
 
-Purpose: provide a visualization of previously simulated robotic movement.
+@author: danny
 """
 
 import numpy as math
@@ -41,112 +39,51 @@ font = pygame.font.Font('freesansbold.ttf', 15)
 # Loop until the user clicks the close button.
 done = False
 
-#lenghs of each arm portion
-a = 31.5 #cm
-b = 31.5 #cm
-c = 7 #cm
-
-#specified operation
-operationHeight = 0 #cm
-startAngle = 0 #deg
 #graphics
 scaleFactor = 2.5
 lineWidth = 5
 doGrid = True
-doPlot = False
+doPlot = True
 gridTileSize = 20 #cm
 fps = 60
-cyclesPerSec=1
+cyclesPerSec=.5
 operationHeightStore=operationHeight
 
 t1=t2=t3=ar=az=br=bz=cr=cz=frameCount=deg=deg2=endAngle=0
 POI=[0,0]
 circles=[]
-points=[]
 
 img = pygame.image.load("marquette robotics.png")
 imgScaled = pygame.transform.scale(img, (200, 66))
 
-def changeAngles():
-    global endAngle, startAngle, operationHeight
-    if a<=abs(operationHeight):
-        if operationHeight>0:
-            operationHeight=a
-            print("max height reached")
-        else:
-            operationHeight=-a
-            print("min height reached")
-    if b>a and operationHeight>=0:
-        endAngle=180
-    else:
-        if a>b+operationHeight and a!=0:
-            endAngle=math.rad2deg(math.arcsin((b+operationHeight)/a))
-        elif a>=abs(operationHeight-b) and a!=0:
-            endAngle=-math.rad2deg(math.arcsin((operationHeight-b)/a))
-        if a+b>operationHeight>0:
-            endAngle=180-endAngle
-    startAngle = math.rad2deg(math.arcsin(operationHeight/a))
+#todo
+def importFile():
+    #importFile
+    #preload the data? maybe at least the z names and radius names
+    print("Nuthing")
+
+#note: has to move only to a valid coordinate
+def move(coordinate):
+    (radius,height)=coordinate
+    #check validity
+    #find closest point on the map
+    #move angles in half sine wave to needed position
 
 def userInputLoop():
     global a,b,c,operationHeight,cyclesPerSec,done,scaleFactor,endAngle,startAngle,circles,gridTileSize
-    print("\nSyntax to change height to 10cm: \"z 10\"\nEnter q to quit.")
+    print("\nSyntax to change coordinate: \"\"\nEnter q to quit.")
     while not done:
-        userInput = input("What would you like to change? ")
+        userInput = input("Import coordinate? ")
         words=userInput.split()
         if len(words)==2:
             circles=[]
-            print("Attempting adjust...")
-            if words[0]=="a":
-                a=float(words[1])
-                changeAngles()
-            elif words[0]=="b":
-                b=float(words[1])
-                changeAngles()
-            elif words[0]=="c":
-                c=float(words[1])
-            elif words[0]=="z":
-                operationHeight=float(words[1])
-            elif words[0]=="cps":
-                cyclesPerSec=float(words[1])
-            elif words[0]=="sa":
-                startAngle=float(words[1])
-            elif words[0]=="ea":
-                endAngle=float(words[1])
-            elif words[0]=="sf":
-                scaleFactor=float(words[1])
-            elif words[0]=="gs":
-                gridTileSize=float(words[1])
-            else:
-                print("Sorry, can't do that.")
+            coord=(words[0],words[1])
+            move(coord)
         elif words[0]=="q":
             done=True
             pygame.quit()
         else:
             print("Improper syntax")
-
-def calculateAngles():
-    global t1,t2,t3,deg,deg2
-    deg += (360*cyclesPerSec)/fps
-    t1= -(((endAngle-startAngle)/2)*math.cos(math.deg2rad(deg)))+startAngle+(endAngle-startAngle)/2
-    if -1 <= (-operationHeight/b)+(a/b)*math.sin(math.deg2rad(t1)) <= 1:
-        t2= (math.rad2deg(math.arccos((-operationHeight/b)+(a/b)*math.sin(math.deg2rad(t1))))-t1-90)
-        t3=-t2-t1
-        calculateComponents();
-
-def calculateComponents():
-    global ar,az,br,bz,cr,cz
-
-    ta = math.deg2rad(t1)
-    ar = a*math.cos(ta)
-    az = -a*math.sin(ta)
-
-    tb = math.deg2rad(t2-270+t1)
-    br = b*math.sin(tb)
-    bz = b*math.cos(tb)
-
-    tc = math.deg2rad(t3-(90-(t2-180+t1)))
-    cr = c*math.sin(tc)
-    cz = c*math.cos(tc)
 
 def overlay(t, x, y, color):
     text = font.render(t, True, color, BLACK)
@@ -175,7 +112,22 @@ try:
 except:
     print("Error: unable to start thread")
 
-changeAngles()
+def calculateComponents():
+    global ar,az,br,bz,cr,cz
+
+    ta = math.deg2rad(t1)
+    ar = a*math.cos(ta)
+    az = -a*math.sin(ta)
+
+    tb = math.deg2rad(t2-270+t1)
+    br = b*math.sin(tb)
+    bz = b*math.cos(tb)
+
+    tc = math.deg2rad(t3-(90-(t2-180+t1)))
+    cr = c*math.sin(tc)
+    cz = c*math.cos(tc)
+    print("%s %s %s" % (ar, br, cr))
+
 goingUp = True
 while not done:
     # --- Main event loop
@@ -183,10 +135,7 @@ while not done:
         if event.type == pygame.QUIT:
             done = True
     frameCount+=1
-    if operationHeightStore!=operationHeight:
-        changeAngles()
-        operationHeightStore = operationHeight
-    calculateAngles()
+
     screen.fill(BLACK)
 
     avector = pygame.math.Vector2()
@@ -207,9 +156,9 @@ while not done:
         drawGrid()
 
     #if frameCount<fps/cyclesPerSec:
-    if frameCount<10000:
-        circles.append(POI)
-        circles.append(center+avector)
+#    if frameCount<1000:
+#        circles.append(POI)
+#        circles.append(center+avector)
 
     pygame.draw.line(screen, RED, center, center+avector, lineWidth)
     pygame.draw.line(screen, GREEN, center+avector, center+avector+bvector, lineWidth)
@@ -230,26 +179,9 @@ while not done:
     overlay("Angle 2: " + str(int(t2)) + "deg", 100, 110, GREEN)
     overlay("Angle 3: " + str(int(t3)) + "deg", 100, 130, BLUE)
 #    print("t", t1, " r", finalRadius)
-    if (-1 <= (-operationHeight/b)+(a/b)*math.cos(math.deg2rad(90-t1)) <= 1) and doPlot:
-        points.append((t1,finalRadius))
     screen.blit(imgScaled, (WIDTH-200, 0))
 
     pygame.display.update()
     clock.tick(fps)
-if doPlot:
-    angles=[]
-    radii=[]
-    fig, ax = plt.subplots()
-    for p in points:
-        while(p[0]>360):
-            p=(p[0]-360,p[1])
-        angles.append(p[0])
-        radii.append(p[1])
-    ax.scatter(angles, radii)
-    ax.set(xlabel='radii (cm)', ylabel='angles (deg)',
-           title='Megarm Motion')
-    ax.grid()
-    fig.savefig("output.png")
-    plt.show()
 
 pygame.quit()

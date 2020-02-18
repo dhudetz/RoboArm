@@ -51,10 +51,10 @@ startAngle = 0 #deg
 scaleFactor = 2.5
 lineWidth = 5
 doGrid = True
-doPlot = False
+doPlot = True
 gridTileSize = 20 #cm
 fps = 60
-cyclesPerSec=1
+cyclesPerSec=.5
 operationHeightStore=operationHeight
 
 t1=t2=t3=ar=az=br=bz=cr=cz=frameCount=deg=deg2=endAngle=0
@@ -130,6 +130,7 @@ def calculateAngles():
         t2= (math.rad2deg(math.arccos((-operationHeight/b)+(a/b)*math.sin(math.deg2rad(t1))))-t1-90)
         t3=-t2-t1
         calculateComponents();
+    #print(t1,t2,t3)
 
 def calculateComponents():
     global ar,az,br,bz,cr,cz
@@ -205,9 +206,9 @@ while not done:
         drawGrid()
 
     #if frameCount<fps/cyclesPerSec:
-    if frameCount<10000:
-        circles.append(POI)
-        circles.append(center+avector)
+#    if frameCount<1000:
+#        circles.append(POI)
+#        circles.append(center+avector)
 
     pygame.draw.line(screen, RED, center, center+avector, lineWidth)
     pygame.draw.line(screen, GREEN, center+avector, center+avector+bvector, lineWidth)
@@ -229,7 +230,7 @@ while not done:
     overlay("Angle 3: " + str(int(t3)) + "deg", 100, 130, BLUE)
 #    print("t", t1, " r", finalRadius)
     if (-1 <= (-operationHeight/b)+(a/b)*math.cos(math.deg2rad(90-t1)) <= 1) and doPlot:
-        points.append((t1,finalRadius))
+        points.append((finalRadius,t1))
     screen.blit(imgScaled, (WIDTH-200, 0))
 
     pygame.display.update()
