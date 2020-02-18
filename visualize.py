@@ -64,7 +64,7 @@ POI=[0,0]
 circles=[]
 points=[]
 
-img = pygame.image.load("marquette robotics.png")
+img = pygame.image.load("marquette_robotics.png")
 imgScaled = pygame.transform.scale(img, (200, 66))
 
 def changeAngles():
