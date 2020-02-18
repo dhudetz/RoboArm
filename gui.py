@@ -10,15 +10,15 @@ import tkinter as tk
 
 
 TK_TITLE = 'MU Robotics Arm Simulator Config'
-TK_WINDOW_X = 600
-TK_WINDOW_Y = 600
+TK_WINDOW_X = 550
+TK_WINDOW_Y = 650
 TK_BG_COLOR = 'black'
 TK_PHOTO_MUR = 'mur_small.png'
 TK_FONT_MAIN = ('Helvetica bold', 35)
-TK_FONT_SECOND = ('Times', 25)
+TK_FONT_SECOND = ('Times', 20)
 TK_FONT_THIRD = ('Times 20 underline')
-TK_FONT_ENTRY = ('Helvetica', 20)
-TK_FONT_BUTTON = ('Courier', 30)
+TK_FONT_ENTRY = ('Helvetica', 16)
+TK_FONT_BUTTON = ('Courier', 25)
 
 response_active = False
 
@@ -27,7 +27,8 @@ response_active = False
 a = 31.5
 b = 31.5
 c = 7
-resolution = 0
+z_resolution = 0
+a_resolution = 0
 
 
 def isnum(a):
@@ -92,29 +93,38 @@ class TkLauncher:
         bg='black', font=TK_FONT_ENTRY)
         self.sec_button_c.grid(row=9, column=1, sticky='w', padx=10)
 
-        self.sec_label_r = tk.Label(self.main, text='Resolution (cm/pixel)', 
+        self.sec_label_zr = tk.Label(self.main, text='zr - Height Resolution (cm/pixel)', 
         font=TK_FONT_SECOND, bg='black', fg='white')
-        self.sec_label_r.grid(row=10, column=1, sticky='w', padx=10)
+        self.sec_label_zr.grid(row=10, column=1, sticky='w', padx=10)
 
-        self.sec_button_r = tk.Entry(self.main, fg='white',
+        self.sec_button_zr = tk.Entry(self.main, fg='white',
         bg='black', font=TK_FONT_ENTRY)
-        self.sec_button_r.grid(row=11, column=1, sticky='w', padx=10)
+        self.sec_button_zr.grid(row=11, column=1, sticky='w', padx=10)
+
+        self.sec_label_ar = tk.Label(self.main, text='ar - Angle Resolution (cm/pixel)', 
+        font=TK_FONT_SECOND, bg='black', fg='white')
+        self.sec_label_ar.grid(row=12, column=1, sticky='w', padx=10)
+
+        self.sec_button_ar = tk.Entry(self.main, fg='white',
+        bg='black', font=TK_FONT_ENTRY)
+        self.sec_button_ar.grid(row=13, column=1, sticky='w', padx=10)
+
 
         self.main_button_generate = tk.Button(self.main, text='Generate',
         font=TK_FONT_BUTTON, command=lambda : 
         self.generate(self.main_label_response))
-        self.main_button_generate.grid(row=9, column=1, sticky='e', padx=50)
+        self.main_button_generate.grid(row=11, column=1, sticky='e', padx=50)
 
         self.sec_label_r = tk.Label(self.main, text='Status', 
         font=TK_FONT_THIRD, bg='black', fg='white')
-        self.sec_label_r.grid(row=11, column=1, sticky='e', padx=100)
+        self.sec_label_r.grid(row=13, column=1, sticky='e', padx=100)
 
         self.main_label_response = tk.Label(self.main, text='Standby',
         font=TK_FONT_BUTTON, bg='black', fg='green')
-        self.main_label_response.grid(row=12, column=1, sticky='e', padx=60)
+        self.main_label_response.grid(row=14, column=1, sticky='e', padx=60)
     
     def generate(self, resp: tk.Label):
-        global a, b, c, resolution, response_active
+        global a, b, c, z_resolution, a_resolution, response_active
         if not response_active:
             response_active = True
             resp.config(text='Generating...', fg='yellow')
@@ -123,7 +133,8 @@ class TkLauncher:
             a = self.sec_button_a.get()
             b = self.sec_button_b.get()
             c = self.sec_button_c.get()
-            resolution = self.sec_button_r.get()
+            z_resolution = self.sec_button_zr.get()
+            a_resolution = self.sec_button_ar.get()
 
             if not isnum(a):
                 resp.config(text='ERROR\n\'a\' is not\na number!', fg='red')
@@ -134,14 +145,18 @@ class TkLauncher:
             elif not isnum(c):
                 resp.config(text='ERROR\n\'c\' is not\na number!', fg='red')
                 resp.grid(padx=30)
-            elif not isnum(resolution):
-                resp.config(text='ERROR\n\'Resolution\' is \nnot a \nnumber!', fg='red')
+            elif not isnum(z_resolution):
+                resp.config(text='ERROR\n\'Height Resolution\' is \nnot a \nnumber!', fg='red')
+                resp.grid(padx=30)
+            elif not isnum(a_resolution):
+                resp.config(text='ERROR\n\'Angle Resolution\' is \nnot a \nnumber!', fg='red')
                 resp.grid(padx=30)
             else:
                 a = float(a)
                 b = float(b)
                 c = float(c)
-                resolution = float(resolution)
+                z_resolution = float(z_resolution)
+                a_resolution = float(a_resolution)
 
                 # GENERATION CODE GOES HERE
 
