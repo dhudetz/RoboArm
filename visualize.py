@@ -53,7 +53,7 @@ t1=t2=t3=ar=az=br=bz=cr=cz=frameCount=deg=deg2=endAngle=0
 POI=[0,0]
 circles=[]
 
-img = pygame.image.load("marquette robotics.png")
+img = pygame.image.load("marquette_robotics.png")
 imgScaled = pygame.transform.scale(img, (200, 66))
 
 #todo
