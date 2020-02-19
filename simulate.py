@@ -6,12 +6,13 @@ Danny Hudetz
 Purpose: simulate and map the possible movements of a robotic arm with a given
          segment lengths
 """
-
 import numpy as math
 from datetime import datetime
 import h5py as hdf
-
 # Print iterations progress
+
+a=b=c=zResolution=angleResolution=0
+
 def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 20, fill = '█', printEnd = "\r"):
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filledLength = int(length * iteration // total)
@@ -42,9 +43,8 @@ def getAngleRange(operationHeight):
     startAngle = math.rad2deg(math.arcsin(operationHeight/a))
     return ((startAngle,endAngle))
 
-def calculateAngles(operationHeight, a):
+def calculateServoAngles(operationHeight, a, startAngle, endAngle):
     t2=t3=0
-    #print(deg)
     t1= -(((endAngle-startAngle)/2)*a)+startAngle+(endAngle-startAngle)/2
     if -1 <= (-operationHeight/b)+(a/b)*math.sin(math.deg2rad(t1)) <= 1:
         t2=(math.rad2deg(math.arccos((-operationHeight/b)+(a/b)*math.sin(math.deg2rad(t1))))-t1-90)
@@ -57,36 +57,33 @@ def getRadius(t1,t2,t3,operationHeight):
     cr = c
     return ar+br+cr
 
+def generate(aLen,bLen,cLen,zRes,aRes):
+    global a,b,c,zResolution,angleResolution
+    a=aLen
+    b=bLen
+    c=cLen
+    zResolution=zRes
+    angleResolution=aRes
+    f = hdf.File("simulated\\"+str(a)+"-"+str(b)+"-"+str(c)+".hdf5", "w")
+    zValues=math.arange(-a,a,zResolution)
+    zCount=0
 
-print("Please enter the segment lengths you want to simulate:")
-a=float(input("Shoulder to elbow (cm)? "))
-b=float(input("Elbow to wrist (cm)? "))
-c=float(input("Wrist to POI (cm)? "))
-zResolution=float(input("Resolution of z (cm)? "))
-angleResolution=float(input("Resolution of servo (deg)? "))
+    for z in zValues:
+        printProgressBar(zCount, len(zValues)-1)
+        angles=getAngleRange(z)
+        startAngle = angles[0]
+        endAngle = angles[1]
+        grp = f.create_group(str(round(z,2)))
+        angles=math.arange(startAngle, endAngle, angleResolution)
 
-#f = hdf.File("simulatedPositions.hdf5", "w")
-now = datetime.now()
-f = hdf.File("simulated\\"+str(a)+"-"+str(b)+"-"+str(c)+".hdf5", "w")
-
-zValues=math.arange(-a,a,zResolution)
-
-zCount=0
-
-for z in zValues:
-    printProgressBar(zCount, len(zValues)-1)
-    angles=getAngleRange(z)
-    startAngle = angles[0]
-    endAngle = angles[1]
-    #print(startAngle, " ", endAngle)
-    grp = f.create_group(str(round(z,2)))
-    angles=math.arange(startAngle, endAngle, angleResolution)
-
-    for ang in math.arange(-1,1,(2*angleResolution)/(endAngle-startAngle)):
-        (shoulder,elbow,wrist)=calculateAngles(z,ang)
-        radius=getRadius(shoulder,elbow,wrist,z)
-        try:
-            grp.create_dataset(str(round(radius, 8)), data=[radius, shoulder, elbow, wrist])
-        except:
-            print("duplicate point. don't worry :)")
-    zCount+=1
+        for ang in math.arange(-1,1,(2*angleResolution)/(endAngle-startAngle)):
+            (shoulder,elbow,wrist)=calculateServoAngles(z,ang,startAngle,endAngle)
+            radius=getRadius(shoulder,elbow,wrist,z)
+            try:
+                grp.create_dataset(str(round(radius, 8)), data=[radius, shoulder, elbow, wrist])
+            except:
+                print("duplicate point. don't worry :)")
+                f.close()
+                break
+        zCount+=1
+    f.close()

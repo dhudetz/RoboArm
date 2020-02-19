@@ -7,7 +7,7 @@ Purpose: tkinter GUI for simulate.py
 """
 
 import tkinter as tk
-
+import simulate as sim
 
 TK_TITLE = 'MU Robotics Arm Simulator Config'
 TK_WINDOW_X = 550
@@ -49,27 +49,27 @@ class TkLauncher:
 
 
         self.mur_image = tk.PhotoImage(file=TK_PHOTO_MUR)
-        self.im_label = tk.Label(image=self.mur_image, 
+        self.im_label = tk.Label(image=self.mur_image,
         borderwidth=0, highlightthickness=0, padx=100, pady=10,
         bg='black')
         self.im_label.grid(row=0, column=1)
 
 
-        self.hzl = tk.Frame(height=2, width=TK_WINDOW_X - int(TK_WINDOW_X / 8), 
+        self.hzl = tk.Frame(height=2, width=TK_WINDOW_X - int(TK_WINDOW_X / 8),
         bd=1, relief=tk.SUNKEN)
         self.hzl.grid(row=1, column=1, padx=5, pady=5)
 
 
-        self.main_label = tk.Label(self.main, text='Generate Simulation Data', 
+        self.main_label = tk.Label(self.main, text='Generate Simulation Data',
         font=TK_FONT_MAIN, bg='black', fg='white')
         self.main_label.grid(row=2, column=1)
 
-        self.hzl = tk.Frame(height=2, width=TK_WINDOW_X - int(TK_WINDOW_X / 8), 
+        self.hzl = tk.Frame(height=2, width=TK_WINDOW_X - int(TK_WINDOW_X / 8),
         bd=1, relief=tk.SUNKEN, bg='black', borderwidth=0)
         self.hzl.grid(row=3, column=1, padx=5, pady=15)
 
 
-        self.sec_label_a = tk.Label(self.main, text='a - Shoulder to Elbow (cm)', 
+        self.sec_label_a = tk.Label(self.main, text='a - Shoulder to Elbow (cm)',
         font=TK_FONT_SECOND, bg='black', fg='white')
         self.sec_label_a.grid(row=4, column=1, sticky='w', padx=10)
 
@@ -77,7 +77,7 @@ class TkLauncher:
         bg='black', font=TK_FONT_ENTRY)
         self.sec_button_a.grid(row=5, column=1, sticky='w', padx=10)
 
-        self.sec_label_b = tk.Label(self.main, text='b - Elbow to Wrist (cm)', 
+        self.sec_label_b = tk.Label(self.main, text='b - Elbow to Wrist (cm)',
         font=TK_FONT_SECOND, bg='black', fg='white')
         self.sec_label_b.grid(row=6, column=1, sticky='w', padx=10)
 
@@ -85,7 +85,7 @@ class TkLauncher:
         bg='black', font=TK_FONT_ENTRY)
         self.sec_button_b.grid(row=7, column=1, sticky='w', padx=10)
 
-        self.sec_label_c = tk.Label(self.main, text='c - Wrist to POI (cm)', 
+        self.sec_label_c = tk.Label(self.main, text='c - Wrist to POI (cm)',
         font=TK_FONT_SECOND, bg='black', fg='white')
         self.sec_label_c.grid(row=8, column=1, sticky='w', padx=10)
 
@@ -93,7 +93,7 @@ class TkLauncher:
         bg='black', font=TK_FONT_ENTRY)
         self.sec_button_c.grid(row=9, column=1, sticky='w', padx=10)
 
-        self.sec_label_zr = tk.Label(self.main, text='zr - Height Resolution (cm/pixel)', 
+        self.sec_label_zr = tk.Label(self.main, text='zr - Height Resolution (cm/pixel)',
         font=TK_FONT_SECOND, bg='black', fg='white')
         self.sec_label_zr.grid(row=10, column=1, sticky='w', padx=10)
 
@@ -101,7 +101,7 @@ class TkLauncher:
         bg='black', font=TK_FONT_ENTRY)
         self.sec_button_zr.grid(row=11, column=1, sticky='w', padx=10)
 
-        self.sec_label_ar = tk.Label(self.main, text='ar - Angle Resolution (cm/pixel)', 
+        self.sec_label_ar = tk.Label(self.main, text='ar - Angle Resolution (cm/pixel)',
         font=TK_FONT_SECOND, bg='black', fg='white')
         self.sec_label_ar.grid(row=12, column=1, sticky='w', padx=10)
 
@@ -111,18 +111,18 @@ class TkLauncher:
 
 
         self.main_button_generate = tk.Button(self.main, text='Generate',
-        font=TK_FONT_BUTTON, command=lambda : 
+        font=TK_FONT_BUTTON, command=lambda :
         self.generate(self.main_label_response))
         self.main_button_generate.grid(row=11, column=1, sticky='e', padx=50)
 
-        self.sec_label_r = tk.Label(self.main, text='Status', 
+        self.sec_label_r = tk.Label(self.main, text='Status',
         font=TK_FONT_THIRD, bg='black', fg='white')
         self.sec_label_r.grid(row=13, column=1, sticky='e', padx=100)
 
         self.main_label_response = tk.Label(self.main, text='Standby',
         font=TK_FONT_BUTTON, bg='black', fg='green')
         self.main_label_response.grid(row=14, column=1, sticky='e', padx=60)
-    
+
     def generate(self, resp: tk.Label):
         global a, b, c, z_resolution, a_resolution, response_active
         if not response_active:
@@ -157,9 +157,8 @@ class TkLauncher:
                 c = float(c)
                 z_resolution = float(z_resolution)
                 a_resolution = float(a_resolution)
-
-                # GENERATION CODE GOES HERE
-
+                resp.config(text='Generating...', fg='yellow')
+                sim.generate(a,b,c,z_resolution,a_resolution)
                 resp.config(text='Values \ngenerated!', fg='cyan')
                 resp.grid(padx=20)
             response_active = False
