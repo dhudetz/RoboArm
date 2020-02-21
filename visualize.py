@@ -1,8 +1,10 @@
-# -*- coding: utf-8 -*-
 """
-Created on Tue Feb 11 17:51:28 2020
+Created on 2/11/20
+Marquette Robotics Club
+Danny Hudetz
 
-@author: danny
+Purpose: read from the hdf5 format and visualize the coordinates mapped nearest
+         to user input
 """
 
 import numpy as math
@@ -10,6 +12,7 @@ import pygame
 import matplotlib
 import matplotlib.pyplot as plt
 import threading
+import h5py as hdf
 
 # Define some colors
 BLACK = (0, 0, 0)
@@ -46,7 +49,8 @@ doGrid = True
 doPlot = True
 gridTileSize = 20 #cm
 fps = 60
-cyclesPerSec=.5
+
+operationHeight=0
 operationHeightStore=operationHeight
 
 t1=t2=t3=ar=az=br=bz=cr=cz=frameCount=deg=deg2=endAngle=0
@@ -57,28 +61,41 @@ img = pygame.image.load("marquette_robotics.png")
 imgScaled = pygame.transform.scale(img, (200, 66))
 
 #todo
-def importFile():
-    #importFile
-    #preload the data? maybe at least the z names and radius names
-    print("Nuthing")
+def getFile(fileName):
+    f=None
+    try:
+        f = hdf.File("simulated\\"+fileName, "r")
+        print("File successfully imported.")
+    except:
+        print("Check if file exists. Makes sure to inlude \'.hdf5\'")
+    return f
 
-#note: has to move only to a valid coordinate
-def move(coordinate):
-    (radius,height)=coordinate
-    #check validity
+def move(file, r, z):
+    print(file, r, z)
     #find closest point on the map
     #move angles in half sine wave to needed position
 
 def userInputLoop():
-    global a,b,c,operationHeight,cyclesPerSec,done,scaleFactor,endAngle,startAngle,circles,gridTileSize
-    print("\nSyntax to change coordinate: \"\"\nEnter q to quit.")
+    global done
+    print("\nMegarm Visualizer")
+    f=None
     while not done:
-        userInput = input("Import coordinate? ")
+        userInput = input("Import coordinate? Type \'help\' for more options: ")
         words=userInput.split()
         if len(words)==2:
             circles=[]
-            coord=(words[0],words[1])
-            move(coord)
+            if(words[0]=='f'):
+                f = getFile(words[1])
+            elif(f!=None):
+                move(f, float(words[0]),float(words[1]))
+            else:
+                print("File not imported.")
+        elif words[0]=="help":
+            print("To enter a coordinate just type the r and z.")
+            print("Example: 15.0 10.0")
+            print("To change hdf5 file reference, type f and the file name.")
+            print("Example: f 31.5-31.5-7.0.hdf5")
+            print("To quit, type q.")
         elif words[0]=="q":
             done=True
             pygame.quit()

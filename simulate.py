@@ -73,17 +73,20 @@ def generate(aLen,bLen,cLen,zRes,aRes):
         angles=getAngleRange(z)
         startAngle = angles[0]
         endAngle = angles[1]
-        grp = f.create_group(str(round(z,2)))
-        angles=math.arange(startAngle, endAngle, angleResolution)
+        try:
+            grp = f.create_group(str(round(z,2)))
+        except:
+            print("Failed z group generation...")
+            angles=math.arange(startAngle, endAngle, angleResolution)
 
-        for ang in math.arange(-1,1,(2*angleResolution)/(endAngle-startAngle)):
-            (shoulder,elbow,wrist)=calculateServoAngles(z,ang,startAngle,endAngle)
-            radius=getRadius(shoulder,elbow,wrist,z)
-            try:
-                grp.create_dataset(str(round(radius, 8)), data=[radius, shoulder, elbow, wrist])
-            except:
-                print("duplicate point. don't worry :)")
-                f.close()
-                break
+            for ang in math.arange(-1,1,(2*angleResolution)/(endAngle-startAngle)):
+                (shoulder,elbow,wrist)=calculateServoAngles(z,ang,startAngle,endAngle)
+                radius=getRadius(shoulder,elbow,wrist,z)
+                try:
+                    grp.create_dataset(str(round(radius, 8)), data=[radius, shoulder, elbow, wrist])
+                except:
+                    print("Failed radius data generation...")
+                    f.close()
+                    break
         zCount+=1
     f.close()
