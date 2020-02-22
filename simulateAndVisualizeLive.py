@@ -1,8 +1,10 @@
-# -*- coding: utf-8 -*-
 """
-Created on Tue Feb 11 17:51:28 2020
+Created on 2/11/20
+Marquette Robotics Club
+Danny Hudetz
 
-@author: danny
+Purpose: change the variables of the megarm live and visualize what it will look
+         like
 """
 
 import numpy as math
