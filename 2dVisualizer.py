@@ -9,10 +9,8 @@ Purpose: read from the hdf5 format and visualize the coordinates mapped nearest
 
 import numpy as math
 import pygame
-import matplotlib
-import matplotlib.pyplot as plt
 import threading
-import h5py as hdf
+import vis
 
 # Define some colors
 BLACK = (0, 0, 0)
@@ -49,10 +47,6 @@ doGrid = True
 gridTileSize = 10 #cm
 fps = 60
 
-a=31.5
-b=31.5
-c=7.0
-
 operationHeight=0
 operationHeightStore=operationHeight
 
@@ -67,62 +61,10 @@ file=None
 img = pygame.image.load("marquette_robotics.png")
 imgScaled = pygame.transform.scale(img, (200, 66))
 
-#todo
-def getFile(fileName):
-    global a,b,c
-    f=None
-    try:
-        f = hdf.File("simulated\\"+fileName, "r")
-        periodSplit=fileName.split('.')
-        periodSplit.pop()
-        valueSplit=".".join(periodSplit).split('-')
-        a=float(valueSplit[0])
-        b=float(valueSplit[1])
-        c=float(valueSplit[2])
-
-        print("File successfully imported.")
-    except:
-        print("Check if file exists. Makes sure to inlude \'.hdf5\'")
-    return f
-
-def move(requestedRadius, requestedZ):
-    global currentAngles,file
-    zStrings = list(file.keys())
-    zFloats = []
-    for z in zStrings:
-        zFloats.append(float(z))
-    lastDiff = 1000000.0 #this can be any arbitrary value
-    for z in zFloats:
-        if requestedZ == z:
-            foundZ = z
-        else:
-            absoluteDiff = float(abs(requestedZ - z))
-            if lastDiff > absoluteDiff:
-                lastDiff = absoluteDiff
-                foundZ = z
-    foundZ = str(foundZ)
-    rStrings = file[foundZ]
-    rFloats = []
-    for r in rStrings:
-        rFloats.append(float(r))
-    lastDiff = 1000000.0 #this can also be any arbitrary value
-    for r in rFloats:
-        if requestedRadius == r:
-            foundR = r
-        else:
-            absoluteDiff = float(abs(requestedRadius - r))
-            if lastDiff > absoluteDiff:
-                lastDiff = absoluteDiff
-                foundR = r
-    foundR = str(foundR)
-    print("Found R: ", foundR)
-    print("Found Z: ", foundZ)
-    servoAngles = rStrings[foundR]
-    print(servoAngles[1], servoAngles[2], servoAngles[3])
-    currentAngles=(servoAngles[1], servoAngles[2], servoAngles[3])
+back=None
 
 def userInputLoop():
-    global done, file, circles, currentAngles, previousAngles
+    global done, file, circles, currentAngles, previousAngles, back,ar,az,br,bz,cr,cz
     print("\nMegarm Visualizer")
     f=None
     while not done:
@@ -130,13 +72,15 @@ def userInputLoop():
         words=userInput.split()
         if len(words)==2:
             if(words[0]=='f'):
-                file = getFile(words[1])
-                currentAngles=resetAngles
-                previousAngles=resetAngles
-                circles=[]
-                calculateComponents(resetAngles[0],resetAngles[1],resetAngles[2])
-            elif(file!=None):
-                move(float(words[0]),float(words[1]))
+                (file,a,b,c) = vis.getFile(words[1])
+                if file!=None:
+                    back=vis.backEnd(a,b,c)
+                    currentAngles=resetAngles
+                    previousAngles=resetAngles
+                    circles=[]
+                    (ar,az,br,bz,cr,cz)=back.calculateComponents(resetAngles[0],resetAngles[1],resetAngles[2])
+            elif file!=None:
+                currentAngles=vis.getServoAngles(file, float(words[0]),float(words[1]))
             else:
                 print("File not imported.")
         elif len(words)==0:
@@ -180,21 +124,6 @@ try:
 except:
     print("Error: unable to start thread")
 
-def calculateComponents(t1, t2, t3):
-    global ar,az,br,bz,cr,cz
-
-    ta = math.deg2rad(t1)
-    ar = a*math.cos(ta)
-    az = -a*math.sin(ta)
-
-    tb = math.deg2rad(t2-270+t1)
-    br = b*math.sin(tb)
-    bz = b*math.cos(tb)
-
-    tc = math.deg2rad(t3-(90-(t2-180+t1)))
-    cr = c*math.sin(tc)
-    cz = c*math.cos(tc)
-
 
 moving=False
 sineCount=0
@@ -207,8 +136,9 @@ while not done:
     frameCount+=1
     if moving:
         if sineCount<=math.pi:
-            calculateComponents((previousAngles[0]-currentAngles[0])*(math.cos(sineCount)+1)/2+currentAngles[0],(previousAngles[1]-currentAngles[1])*(math.cos(sineCount)+1)/2+currentAngles[1],
-                                (previousAngles[2]-currentAngles[2])*(math.cos(sineCount)+1)/2+currentAngles[2])
+            (ar,az,br,bz,cr,cz)=back.calculateComponents((previousAngles[0]-currentAngles[0])*(math.cos(sineCount)+1)/2+currentAngles[0],
+                                                    (previousAngles[1]-currentAngles[1])*(math.cos(sineCount)+1)/2+currentAngles[1],
+                                                    (previousAngles[2]-currentAngles[2])*(math.cos(sineCount)+1)/2+currentAngles[2])
             sineCount+=math.pi/100
         else:
             moving=False
