@@ -53,7 +53,7 @@ fps = 60
 operationHeight=0
 operationHeightStore=operationHeight
 
-t1=t2=t3=ar=az=br=bz=cr=cz=frameCount=deg=deg2=endAngle=0
+ar=az=br=bz=cr=cz=frameCount=deg=deg2=endAngle=a=b=c=0
 POI=[0,0]
 circles=[]
 
@@ -62,9 +62,17 @@ imgScaled = pygame.transform.scale(img, (200, 66))
 
 #todo
 def getFile(fileName):
+    global a,b,c
     f=None
     try:
         f = hdf.File("simulated\\"+fileName, "r")
+        periodSplit=fileName.split('.')
+        periodSplit.pop()
+        valueSplit=".".join(periodSplit).split('-')
+        a=float(valueSplit[0])
+        b=float(valueSplit[1])
+        c=float(valueSplit[2])
+        calculateComponents(0,0,0)
         print("File successfully imported.")
     except:
         print("Check if file exists. Makes sure to inlude \'.hdf5\'")
@@ -72,6 +80,12 @@ def getFile(fileName):
 
 def move(file, r, z):
     print(file, r, z)
+    t1=90
+    t2=90
+    t3=90
+    calculateComponents(t1,t2,t3)
+    #use hdfreader to get the servo positions
+
     #find closest point on the map
     #move angles in half sine wave to needed position
 
@@ -129,7 +143,7 @@ try:
 except:
     print("Error: unable to start thread")
 
-def calculateComponents():
+def calculateComponents(t1, t2, t3):
     global ar,az,br,bz,cr,cz
 
     ta = math.deg2rad(t1)
@@ -154,7 +168,6 @@ while not done:
     frameCount+=1
 
     screen.fill(BLACK)
-
     avector = pygame.math.Vector2()
     avector.x = ar*scaleFactor
     avector.y = az*scaleFactor
@@ -192,9 +205,9 @@ while not done:
     overlay("Grid tile is "+str(gridTileSize)+"cm by "+str(gridTileSize)+"cm", 100, 30, WHITE)
     overlay("Radius: " + str(int(finalRadius)) + "cm", 100, 50, WHITE)
     overlay("Height: " + str(int(finalHeight)) + "cm", 100, 70, WHITE)
-    overlay("Angle 1: " + str(int(t1)) + "deg", 100, 90, RED)
-    overlay("Angle 2: " + str(int(t2)) + "deg", 100, 110, GREEN)
-    overlay("Angle 3: " + str(int(t3)) + "deg", 100, 130, BLUE)
+#    overlay("Angle 1: " + str(int(t1)) + "deg", 100, 90, RED)
+#    overlay("Angle 2: " + str(int(t2)) + "deg", 100, 110, GREEN)
+#    overlay("Angle 3: " + str(int(t3)) + "deg", 100, 130, BLUE)
 #    print("t", t1, " r", finalRadius)
     screen.blit(imgScaled, (WIDTH-200, 0))
 
