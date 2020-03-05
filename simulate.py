@@ -43,7 +43,7 @@ def getAngleRange(operationHeight):
     startAngle = math.rad2deg(math.arcsin(operationHeight/a))
     return ((startAngle,endAngle))
 
-def calculateServoAngles(operationHeight, t1, startAngle, endAngle):
+def calculateServoAngles(operationHeight, t1):
     t2=t3=0
     #t1= -(((endAngle-startAngle)/2)*a)+startAngle+(endAngle-startAngle)/2
     if -1 <= (-operationHeight/b)+(a/b)*math.sin(math.deg2rad(t1)) <= 1:
@@ -77,8 +77,8 @@ def generate(aLen,bLen,cLen,zRes,aRes):
             grp = f.create_group(str(round(z,2)))
             angles=math.arange(startAngle, endAngle, angleResolution)
 
-            for ang in math.arange(-1,1,(2*angleResolution)/(endAngle-startAngle)):
-                (shoulder,elbow,wrist)=calculateServoAngles(z,ang,startAngle,endAngle)
+            for ang in angles:
+                (shoulder,elbow,wrist)=calculateServoAngles(z,ang)
                 radius=getRadius(shoulder,elbow,wrist,z)
                 try:
                     grp.create_dataset(str(round(radius, 8)), data=[radius, shoulder, elbow, wrist])

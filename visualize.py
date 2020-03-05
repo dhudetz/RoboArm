@@ -87,7 +87,7 @@ def move(f, requestedRadius, requestedZ):
     bois = []
     for item in file:
         bois.append(float(item))
-    lastDiff = 100.0 #this can be any arbitrary value
+    lastDiff = 1000000.0 #this can be any arbitrary value
     for z in bois:
         if requestedZ == z:
             foundZ = z
@@ -97,12 +97,11 @@ def move(f, requestedRadius, requestedZ):
                 lastDiff = absoluteDiff
                 foundZ = z
     foundZ = str(foundZ)
-    print("Found Z: ", foundZ)
     dataSet = f[foundZ]
     bois2 = []
     for item in dataSet:
         bois2.append(float(item))
-    lastDiff = 20.0 #this can also be any arbitrary value
+    lastDiff = 1000000.0 #this can also be any arbitrary value
     for r in bois2:
         if requestedRadius == r:
             foundR = r
@@ -113,6 +112,7 @@ def move(f, requestedRadius, requestedZ):
                 foundR = r
     foundR = str(foundR)
     print("Found R: ", foundR)
+    print("Found Z: ", foundZ)
     servoAngles = dataSet[foundR]
     print(servoAngles[1], servoAngles[2], servoAngles[3])
     calculateComponents(servoAngles[1],servoAngles[2],servoAngles[3])
@@ -185,7 +185,6 @@ def calculateComponents(t1, t2, t3):
     tc = math.deg2rad(t3-(90-(t2-180+t1)))
     cr = c*math.sin(tc)
     cz = c*math.cos(tc)
-    print("%s %s %s" % (ar, br, cr))
 
 while not done:
     # --- Main event loop
@@ -212,15 +211,9 @@ while not done:
     if doGrid:
         drawGrid()
 
-    #if frameCount<fps/cyclesPerSec:
-#    if frameCount<1000:
-#        circles.append(POI)
-#        circles.append(center+avector)
-
     pygame.draw.line(screen, RED, center, center+avector, lineWidth)
     pygame.draw.line(screen, GREEN, center+avector, center+avector+bvector, lineWidth)
     pygame.draw.line(screen, BLUE, center+avector+bvector, POI, lineWidth)
-    #pygame.draw.line(screen, GRAY, center, POI, 1)
 
     pygame.draw.circle(screen, WHITE, [int(POI.x),int(POI.y)], 3)
     pygame.draw.circle(screen, WHITE, [int(center.x),int(center.y)], 3)
@@ -230,12 +223,8 @@ while not done:
     finalRadius = (POI.x-center.x)/scaleFactor
     finalHeight = -(POI.y-center.y)/scaleFactor
     overlay("Grid tile is "+str(gridTileSize)+"cm by "+str(gridTileSize)+"cm", 100, 30, WHITE)
-    overlay("Radius: " + str(int(finalRadius)) + "cm", 100, 50, WHITE)
-    overlay("Height: " + str(int(finalHeight)) + "cm", 100, 70, WHITE)
-#    overlay("Angle 1: " + str(int(t1)) + "deg", 100, 90, RED)
-#    overlay("Angle 2: " + str(int(t2)) + "deg", 100, 110, GREEN)
-#    overlay("Angle 3: " + str(int(t3)) + "deg", 100, 130, BLUE)
-#    print("t", t1, " r", finalRadius)
+    overlay("Radius: " + str(round(finalRadius,3)) + "cm", 100, 50, WHITE)
+    overlay("Height: " + str(round(finalHeight,3)) + "cm", 100, 70, WHITE)
     screen.blit(imgScaled, (WIDTH-200, 0))
 
     pygame.display.update()
