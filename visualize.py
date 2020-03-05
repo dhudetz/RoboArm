@@ -43,11 +43,10 @@ font = pygame.font.Font('freesansbold.ttf', 15)
 done = False
 
 #graphics
-scaleFactor = 2.5
-lineWidth = 5
+scaleFactor = 3
+lineWidth = 7
 doGrid = True
-doPlot = True
-gridTileSize = 20 #cm
+gridTileSize = 10 #cm
 fps = 60
 
 a=31.5
@@ -58,10 +57,12 @@ operationHeight=0
 operationHeightStore=operationHeight
 
 ar=az=br=bz=cr=cz=frameCount=deg=deg2=endAngle=0
-previousAngles=(0,0,0)
-currentAngles=(0,0,0)
+resetAngles=(90,-90,90)
+previousAngles=resetAngles
+currentAngles=resetAngles
 POI=[0,0]
 circles=[]
+file=None
 
 img = pygame.image.load("marquette_robotics.png")
 imgScaled = pygame.transform.scale(img, (200, 66))
@@ -78,20 +79,20 @@ def getFile(fileName):
         a=float(valueSplit[0])
         b=float(valueSplit[1])
         c=float(valueSplit[2])
-        calculateComponents(0,0,0)
+
         print("File successfully imported.")
     except:
         print("Check if file exists. Makes sure to inlude \'.hdf5\'")
     return f
 
-def move(f, requestedRadius, requestedZ):
-    global currentAngles
-    file = list(f.keys())
-    bois = []
-    for item in file:
-        bois.append(float(item))
+def move(requestedRadius, requestedZ):
+    global currentAngles,file
+    zStrings = list(file.keys())
+    zFloats = []
+    for z in zStrings:
+        zFloats.append(float(z))
     lastDiff = 1000000.0 #this can be any arbitrary value
-    for z in bois:
+    for z in zFloats:
         if requestedZ == z:
             foundZ = z
         else:
@@ -100,12 +101,12 @@ def move(f, requestedRadius, requestedZ):
                 lastDiff = absoluteDiff
                 foundZ = z
     foundZ = str(foundZ)
-    dataSet = f[foundZ]
-    bois2 = []
-    for item in dataSet:
-        bois2.append(float(item))
+    rStrings = file[foundZ]
+    rFloats = []
+    for r in rStrings:
+        rFloats.append(float(r))
     lastDiff = 1000000.0 #this can also be any arbitrary value
-    for r in bois2:
+    for r in rFloats:
         if requestedRadius == r:
             foundR = r
         else:
@@ -116,25 +117,30 @@ def move(f, requestedRadius, requestedZ):
     foundR = str(foundR)
     print("Found R: ", foundR)
     print("Found Z: ", foundZ)
-    servoAngles = dataSet[foundR]
+    servoAngles = rStrings[foundR]
     print(servoAngles[1], servoAngles[2], servoAngles[3])
     currentAngles=(servoAngles[1], servoAngles[2], servoAngles[3])
 
 def userInputLoop():
-    global done
+    global done, file, circles, currentAngles, previousAngles
     print("\nMegarm Visualizer")
     f=None
     while not done:
         userInput = input("Import coordinate r z? Type \'help\' for more options: ")
         words=userInput.split()
         if len(words)==2:
-            circles=[]
             if(words[0]=='f'):
-                f = getFile(words[1])
-            elif(f!=None):
-                move(f, float(words[0]),float(words[1]))
+                file = getFile(words[1])
+                currentAngles=resetAngles
+                previousAngles=resetAngles
+                circles=[]
+                calculateComponents(resetAngles[0],resetAngles[1],resetAngles[2])
+            elif(file!=None):
+                move(float(words[0]),float(words[1]))
             else:
                 print("File not imported.")
+        elif len(words)==0:
+            print("Improper syntax")
         elif words[0]=="help":
             print("To enter a coordinate just type the r and z.")
             print("Example: 15.0 10.0")
@@ -192,6 +198,7 @@ def calculateComponents(t1, t2, t3):
 
 moving=False
 sineCount=0
+posCount=0
 while not done:
     # --- Main event loop
     for event in pygame.event.get():
@@ -206,6 +213,10 @@ while not done:
         else:
             moving=False
             previousAngles=currentAngles
+            if posCount==3:
+                posCount=0
+            else:
+                posCount+=1
     if previousAngles!=currentAngles and not moving:
             moving=True
             sineCount=0
@@ -219,8 +230,9 @@ while not done:
     cvector = pygame.math.Vector2()
     cvector.x = cr*scaleFactor
     cvector.y = cz*scaleFactor
-
     POI = center+avector+bvector+cvector
+    if moving:
+        circles.append(POI)
     for cir in circles:
         pygame.draw.circle(screen, GRAY, [int(cir.x),int(cir.y)], 1)
 
