@@ -50,10 +50,14 @@ doPlot = True
 gridTileSize = 20 #cm
 fps = 60
 
+a=31.5
+b=31.5
+c=7.0
+
 operationHeight=0
 operationHeightStore=operationHeight
 
-ar=az=br=bz=cr=cz=frameCount=deg=deg2=endAngle=a=b=c=0
+ar=az=br=bz=cr=cz=frameCount=deg=deg2=endAngle=0
 POI=[0,0]
 circles=[]
 
@@ -78,23 +82,47 @@ def getFile(fileName):
         print("Check if file exists. Makes sure to inlude \'.hdf5\'")
     return f
 
-def move(file, r, z):
-    print(file, r, z)
-    t1=90
-    t2=90
-    t3=90
-    calculateComponents(t1,t2,t3)
-    #use hdfreader to get the servo positions
-
-    #find closest point on the map
-    #move angles in half sine wave to needed position
+def move(f, requestedRadius, requestedZ):
+    file = list(f.keys())
+    bois = []
+    for item in file:
+        bois.append(float(item))
+    lastDiff = 100.0 #this can be any arbitrary value
+    for z in bois:
+        if requestedZ == z:
+            foundZ = z
+        else:
+            absoluteDiff = float(abs(requestedZ - z))
+            if lastDiff > absoluteDiff:
+                lastDiff = absoluteDiff
+                foundZ = z
+    foundZ = str(foundZ)
+    print("Found Z: ", foundZ)
+    dataSet = f[foundZ]
+    bois2 = []
+    for item in dataSet:
+        bois2.append(float(item))
+    lastDiff = 20.0 #this can also be any arbitrary value
+    for r in bois2:
+        if requestedRadius == r:
+            foundR = r
+        else:
+            absoluteDiff = float(abs(requestedRadius - r))
+            if lastDiff > absoluteDiff:
+                lastDiff = absoluteDiff
+                foundR = r
+    foundR = str(foundR)
+    print("Found R: ", foundR)
+    servoAngles = dataSet[foundR]
+    print(servoAngles[1], servoAngles[2], servoAngles[3])
+    calculateComponents(servoAngles[1],servoAngles[2],servoAngles[3])
 
 def userInputLoop():
     global done
     print("\nMegarm Visualizer")
     f=None
     while not done:
-        userInput = input("Import coordinate? Type \'help\' for more options: ")
+        userInput = input("Import coordinate r z? Type \'help\' for more options: ")
         words=userInput.split()
         if len(words)==2:
             circles=[]
@@ -159,7 +187,6 @@ def calculateComponents(t1, t2, t3):
     cz = c*math.cos(tc)
     print("%s %s %s" % (ar, br, cr))
 
-goingUp = True
 while not done:
     # --- Main event loop
     for event in pygame.event.get():

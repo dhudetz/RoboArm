@@ -43,9 +43,9 @@ def getAngleRange(operationHeight):
     startAngle = math.rad2deg(math.arcsin(operationHeight/a))
     return ((startAngle,endAngle))
 
-def calculateServoAngles(operationHeight, a, startAngle, endAngle):
+def calculateServoAngles(operationHeight, t1, startAngle, endAngle):
     t2=t3=0
-    t1= -(((endAngle-startAngle)/2)*a)+startAngle+(endAngle-startAngle)/2
+    #t1= -(((endAngle-startAngle)/2)*a)+startAngle+(endAngle-startAngle)/2
     if -1 <= (-operationHeight/b)+(a/b)*math.sin(math.deg2rad(t1)) <= 1:
         t2=(math.rad2deg(math.arccos((-operationHeight/b)+(a/b)*math.sin(math.deg2rad(t1))))-t1-90)
         t3=-t2-t1

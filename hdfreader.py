@@ -3,38 +3,38 @@ import array as arr
 import numpy as np
 
 f = hdf.File("simulated\\31.0-31.0-7.0.hdf5", "r")
-
-zrinputs = float(input("Enter a 'z':"))
-print("Entered z: "+str(zrinputs)) #remove later
+requestedZ = float(input("Enter a 'z':"))
 file = list(f.keys())
 bois = []
 for item in file:
     bois.append(float(item))
-loopCheckVar = 100.0 #this can be any arbitrary value
+lastDiff = 100.0 #this can be any arbitrary value
 for z in bois:
-    if zrinputs == z:
-        break
+    if requestedZ == z:
+        foundZ = z
     else:
-        absoluteDiff = float(abs(zrinputs - z))
-        if loopCheckVar > absoluteDiff:
-            loopCheckVar = absoluteDiff
+        absoluteDiff = float(abs(requestedZ - z))
+        if lastDiff > absoluteDiff:
+            lastDiff = absoluteDiff
             foundZ = z
 foundZ = str(foundZ)
+print("Found Z: ", foundZ)
 dataSet = f[foundZ]
-radius = float(input("Enter a 'r': "))
-print("Entered r: "+str(radius))
+requestedRadius = float(input("Enter a 'r': "))
+print("Entered r: "+str(requestedRadius))
 bois2 = []
 for item in dataSet:
     bois2.append(float(item))
-loopCheckVar = 20.0 #this can also be any arbitrary value
+lastDiff = 20.0 #this can also be any arbitrary value
 for r in bois2:
-    if radius == r:
-        break
+    if requestedRadius == r:
+        foundR = r
     else:
-        absoluteDiff = float(abs(radius - r))
-        if loopCheckVar > absoluteDiff:
-            loopCheckVar = absoluteDiff
+        absoluteDiff = float(abs(requestedRadius - r))
+        if lastDiff > absoluteDiff:
+            lastDiff = absoluteDiff
             foundR = r
 foundR = str(foundR)
+print("Found R: ", foundR)
 servoAngles = dataSet[foundR]
-print(servoAngles[1])
+print(servoAngles[1], servoAngles[2], servoAngles[3])
