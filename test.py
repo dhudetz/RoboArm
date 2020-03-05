@@ -1,3 +1,7 @@
-import simulate2 as sim
+import simulate as sim
+import os
 
-sim.generate(31.5,31.5,7,.5,.2)
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+path = os.path.join(ROOT_DIR, "simulated")
+os.mkdir(path)
+print(path)

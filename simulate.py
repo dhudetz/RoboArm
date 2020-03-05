@@ -9,6 +9,7 @@ Purpose: simulate and map the possible movements of a robotic arm with a given
 import numpy as math
 from datetime import datetime
 import h5py as hdf
+import os
 # Print iterations progress
 
 a=b=c=zResolution=angleResolution=0
@@ -64,6 +65,13 @@ def generate(aLen,bLen,cLen,zRes,aRes):
     c=cLen
     zResolution=zRes
     angleResolution=aRes
+    ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(ROOT_DIR, "simulated")
+    try:
+        os.mkdir(path)
+        print("sim directory created")
+    except:
+        print("sim directory exists")
     f = hdf.File("simulated\\"+str(a)+"-"+str(b)+"-"+str(c)+".hdf5", "w")
     zValues=math.arange(-a,a,zResolution)
     zCount=0

@@ -58,6 +58,8 @@ operationHeight=0
 operationHeightStore=operationHeight
 
 ar=az=br=bz=cr=cz=frameCount=deg=deg2=endAngle=0
+previousAngles=(0,0,0)
+currentAngles=(0,0,0)
 POI=[0,0]
 circles=[]
 
@@ -83,6 +85,7 @@ def getFile(fileName):
     return f
 
 def move(f, requestedRadius, requestedZ):
+    global currentAngles
     file = list(f.keys())
     bois = []
     for item in file:
@@ -115,7 +118,7 @@ def move(f, requestedRadius, requestedZ):
     print("Found Z: ", foundZ)
     servoAngles = dataSet[foundR]
     print(servoAngles[1], servoAngles[2], servoAngles[3])
-    calculateComponents(servoAngles[1],servoAngles[2],servoAngles[3])
+    currentAngles=(servoAngles[1], servoAngles[2], servoAngles[3])
 
 def userInputLoop():
     global done
@@ -186,13 +189,26 @@ def calculateComponents(t1, t2, t3):
     cr = c*math.sin(tc)
     cz = c*math.cos(tc)
 
+
+moving=False
+sineCount=0
 while not done:
     # --- Main event loop
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
     frameCount+=1
-
+    if moving:
+        if sineCount<=math.pi:
+            calculateComponents((previousAngles[0]-currentAngles[0])*(math.cos(sineCount)+1)/2+currentAngles[0],(previousAngles[1]-currentAngles[1])*(math.cos(sineCount)+1)/2+currentAngles[1],
+                                (previousAngles[2]-currentAngles[2])*(math.cos(sineCount)+1)/2+currentAngles[2])
+            sineCount+=math.pi/100
+        else:
+            moving=False
+            previousAngles=currentAngles
+    if previousAngles!=currentAngles and not moving:
+            moving=True
+            sineCount=0
     screen.fill(BLACK)
     avector = pygame.math.Vector2()
     avector.x = ar*scaleFactor
