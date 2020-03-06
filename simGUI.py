@@ -2,7 +2,6 @@
 Created on 2/17/20
 Marquette Robotics Club
 Tyler Jones
-
 Purpose: tkinter GUI for simulate.py
 """
 

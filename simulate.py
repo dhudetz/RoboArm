@@ -2,7 +2,6 @@
 Created on 2/17/20
 Marquette Robotics Club
 Danny Hudetz
-
 Purpose: simulate and map the possible movements of a robotic arm with a given
          segment lengths
 """

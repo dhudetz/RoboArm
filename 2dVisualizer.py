@@ -2,9 +2,8 @@
 Created on 2/11/20
 Marquette Robotics Club
 Danny Hudetz
-
 Purpose: read from the hdf5 format and visualize the coordinates mapped nearest
-         to user input
+         to user input in 2 dimensions
 """
 
 import numpy as math

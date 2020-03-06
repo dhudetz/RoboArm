@@ -1,3 +1,11 @@
+"""
+Created on 3/5/20
+Marquette Robotics Club
+Danny Hudetz
+Purpose: read from the hdf5 format and visualize the coordinates mapped nearest
+         to user input in 3 dimensions
+"""
+
 from math import pi, sin, cos
 from numpy import deg2rad
 import vis
@@ -24,11 +32,7 @@ class visualizer(ShowBase):
 
         base.win.requestProperties(props)
         base.setBackgroundColor(0,0,0)
-        self.a=31.5
-        self.b=31.5
-        self.c=7
-        self.t0=0
-        self.counter=0
+        self.a=self.b=self.c=self.counter=0
         self.center = LVector3f(0,0,0)
         self.back=vis.backEnd(self.a,self.b,self.c)
         self.aSeg = LineSegs("a")
@@ -40,6 +44,7 @@ class visualizer(ShowBase):
         self.segments=(self.aSeg,self.bSeg,self.cSeg)
         self.models=[]
         self.doKnife=False
+
         for s in self.segments:
             s.setThickness(self.thickness)
         self.segmentNodes=[]

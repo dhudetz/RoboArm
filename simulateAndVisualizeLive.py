@@ -2,7 +2,6 @@
 Created on 2/11/20
 Marquette Robotics Club
 Danny Hudetz
-
 Purpose: change the variables of the megarm live and visualize what it will look
          like
 """

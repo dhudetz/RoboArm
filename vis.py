@@ -1,3 +1,10 @@
+"""
+Created on 3/5/20
+Marquette Robotics Club
+Danny Hudetz
+Purpose: do various shared functions between 2d and 3d visualizers
+"""
+
 import numpy as math
 import h5py as hdf
 
