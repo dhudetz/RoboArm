@@ -4,6 +4,7 @@ import vis
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 from pandac.PandaModules import *
+from panda3d.core import *
 from direct.interval.IntervalGlobal import *
 import threading
 import sys
@@ -40,12 +41,12 @@ class visualizer(ShowBase):
         for s in self.segments:
             self.segmentNodes.append(s.create(False))
         #grid drawing
-        tileSize=5
+        tileSize=10
         numLines=100
         for x in range(int(-numLines/2),int(numLines/2)):
             gridSegment=LineSegs("g")
-            gridSegment.setColor(0.5,0.5,0.5,1)
-            gridSegment.setThickness(2)
+            gridSegment.setColor(0.1,0.1,0.1,1)
+            gridSegment.setThickness(10)
             gridSegment.drawTo(x*tileSize, (-numLines/2)*tileSize, 0)
             gridSegment.drawTo(x*tileSize, (numLines/2)*tileSize, 0)
             render.attachNewNode(gridSegment.create(False))
@@ -66,7 +67,6 @@ class visualizer(ShowBase):
 
 
     def drawSegments(self, t0, t1, t2, t3):
-        self.t0=180+t0
         for sNode in self.segmentNodes:
             np=NodePath(sNode)
             np.removeNode()
@@ -76,16 +76,21 @@ class visualizer(ShowBase):
         cVector = LVector3f(cr,0,cz)
         POI = self.center+aVector+bVector+cVector
         vertices=[self.center,self.center+aVector,self.center+aVector+bVector,POI]
-        self.aSeg.drawTo(vertices[0])
-        self.aSeg.drawTo(vertices[1])
-        self.bSeg.drawTo(vertices[1])
-        self.bSeg.drawTo(vertices[2])
-        self.cSeg.drawTo(vertices[2])
-        self.cSeg.drawTo(vertices[3])
+        rotatedVertices=[]
+        for vertex in vertices:
+            q=Quat()
+            q.set_from_axis_angle(t0+180, LVector3f(0,0,1))
+            rotatedVertices.append(q.xform(vertex))
+        self.aSeg.drawTo(rotatedVertices[0])
+        self.aSeg.drawTo(rotatedVertices[1])
+        self.bSeg.drawTo(rotatedVertices[1])
+        self.bSeg.drawTo(rotatedVertices[2])
+        self.cSeg.drawTo(rotatedVertices[2])
+        self.cSeg.drawTo(rotatedVertices[3])
         self.segmentNodes=[]
         for s in self.segments:
             self.segmentNodes.append(s.create(False))
-        for vertex in vertices:
+        for vertex in rotatedVertices:
             vertexSegment=LineSegs("v")
             vertexSegment.setColor(1,1,1,1)
             vertexSegment.setThickness(self.thickness*7)
@@ -96,12 +101,10 @@ class visualizer(ShowBase):
             render.attachNewNode(sNode)
 
     def spinCameraTask(self, task):
-        angleDegrees = task.time * 100.0
+        angleDegrees = task.time * 10.0
         angleRadians = angleDegrees * (pi / 180.0)
-        #self.camera.setPos(300 * sin(deg2rad(self.t0)), -300 * cos(deg2rad(self.t0)), -300)
-        #self.camera.setHpr(self.t0, 45, 180)
-        self.camera.setPos(300 * sin(deg2rad(self.t0)), -300 * cos(deg2rad(self.t0)), -200)
-        self.camera.setHpr(self.t0, 30, 180)
+        self.camera.setPos(300 * sin(angleRadians), -300 * cos(angleRadians), -300)
+        self.camera.setHpr(angleDegrees, 45, 180)
         return Task.cont
 
     def smoothMoveTask(self, task):
