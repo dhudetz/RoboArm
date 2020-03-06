@@ -73,3 +73,13 @@ def getFile(fileName):
     except:
         print("Check if file exists. Makes sure to inlude \'.hdf5\'")
     return f,a,b,c
+
+
+def getSineMovement(previousAngles,requestedAngles):
+    smoothAngles=[]
+    for a in math.arange(0.0,math.pi,math.pi/100):
+        angleSet=[]
+        for i in range(len(previousAngles)):
+            angleSet.append(((previousAngles[i]-requestedAngles[i])*(math.cos(a)+1))/2+requestedAngles[i])
+        smoothAngles.append(angleSet)
+    return smoothAngles

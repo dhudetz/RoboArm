@@ -12,7 +12,7 @@ class visualizer(ShowBase):
 
     def __init__(self):
         ShowBase.__init__(self)
-        w, h = 2000, 750
+        w, h = 750, 750
         self.thickness=10
 
         props = WindowProperties()
@@ -24,6 +24,7 @@ class visualizer(ShowBase):
         self.b=31.5
         self.c=7
         self.t0=0
+        self.counter=0
         self.center = LVector3f(0,0,0)
         self.back=vis.backEnd(self.a,self.b,self.c)
         self.aSeg = LineSegs("a")
@@ -38,14 +39,31 @@ class visualizer(ShowBase):
         self.segmentNodes=[]
         for s in self.segments:
             self.segmentNodes.append(s.create(False))
+        #grid drawing
+        tileSize=5
+        numLines=100
+        for x in range(int(-numLines/2),int(numLines/2)):
+            gridSegment=LineSegs("g")
+            gridSegment.setColor(0.5,0.5,0.5,1)
+            gridSegment.setThickness(2)
+            gridSegment.drawTo(x*tileSize, (-numLines/2)*tileSize, 0)
+            gridSegment.drawTo(x*tileSize, (numLines/2)*tileSize, 0)
+            render.attachNewNode(gridSegment.create(False))
+        for y in range(int(-numLines/2),int(numLines/2)):
+            gridSegment=LineSegs("g")
+            gridSegment.setColor(0.5,0.5,0.5,1)
+            gridSegment.setThickness(2)
+            gridSegment.drawTo((-numLines/2)*tileSize, y*tileSize, 0)
+            gridSegment.drawTo((numLines/2)*tileSize, y*tileSize, 0)
+            render.attachNewNode(gridSegment.create(False))
         self.taskMgr.add(self.spinCameraTask, "SpinCameraTask")
-        self.taskMgr.add(self.moveArmTask, "moveArmTask")
 
     def changeSegments(self,a,b,c):
         self.a=a
         self.b=b
         self.c=c
         self.back=vis.backEnd(self.a,self.b,self.c)
+
 
     def drawSegments(self, t0, t1, t2, t3):
         self.t0=180+t0
@@ -70,7 +88,7 @@ class visualizer(ShowBase):
         for vertex in vertices:
             vertexSegment=LineSegs("v")
             vertexSegment.setColor(1,1,1,1)
-            vertexSegment.setThickness(self.thickness*10)
+            vertexSegment.setThickness(self.thickness*7)
             vertexSegment.drawTo(vertex+LVector3f(0,-1,0))
             vertexSegment.drawTo(vertex+LVector3f(0,1,0))
             self.segmentNodes.append(vertexSegment.create(False))
@@ -80,24 +98,32 @@ class visualizer(ShowBase):
     def spinCameraTask(self, task):
         angleDegrees = task.time * 100.0
         angleRadians = angleDegrees * (pi / 180.0)
-        self.camera.setPos(300 * sin(deg2rad(self.t0)), -300 * cos(deg2rad(self.t0)), 0)
-        self.camera.setHpr(self.t0, 0, 180)
-        #self.camera.setPos(250 * sin(angleRadians), -250 * cos(angleRadians), -20)
-        #self.camera.setHpr(angleDegrees, 0, 180)
+        #self.camera.setPos(300 * sin(deg2rad(self.t0)), -300 * cos(deg2rad(self.t0)), -300)
+        #self.camera.setHpr(self.t0, 45, 180)
+        self.camera.setPos(300 * sin(deg2rad(self.t0)), -300 * cos(deg2rad(self.t0)), -200)
+        self.camera.setHpr(self.t0, 30, 180)
         return Task.cont
 
-    def moveArmTask(self, task):
-        angleDegrees = task.time * 1000.0
-        for s in self.segments:
-            s.reset()
-        #self.drawSegments(angleDegrees,angleDegrees/2,angleDegrees/4)
-        return Task.cont
+    def smoothMoveTask(self, task):
+        currentFrame = task.frame
+        if self.counter<len(self.smoothAngles):
+            if currentFrame%1==0 :
+                angleSet=self.smoothAngles[self.counter]
+                self.drawSegments(angleSet[0],angleSet[1],angleSet[2],angleSet[3])
+                self.counter+=1
+            return Task.cont
+        else:
+            self.counter=0
+
+    def newSmoothMove(self, smoothAngles):
+        self.smoothAngles=smoothAngles
+        self.taskMgr.add(self.smoothMoveTask, "smoothMoveTask")
 
     def close(self):
         sys.exit()
 
 app = visualizer()
-previousAngles=currentAngles=resetAngles=(0,0,0,0)
+previousAngles=requestedAngles=resetAngles=(0,0,0,0)
 done=False
 file=None
 
@@ -106,12 +132,15 @@ def userInputLoop():
     print("\nMegarm Visualizer")
     f=None
     while not done:
-        userInput = input("Import coordinate r z? Type \'help\' for more options: ")
+        userInput = input("Import coordinate r t z? Type \'help\' for more options: ")
         words=userInput.split()
         if len(words)==3:
             if file!=None:
                 servoAngles=vis.getServoAngles(file, float(words[0]),float(words[2]))
-                app.drawSegments(float(words[1]), servoAngles[0],servoAngles[1],servoAngles[2])
+                requestedAngles=(float(words[1]), servoAngles[0],servoAngles[1],servoAngles[2])
+                smoothAngles=vis.getSineMovement(previousAngles, requestedAngles)
+                previousAngles=requestedAngles
+                app.newSmoothMove(smoothAngles)
             else:
                 print("File not imported.")
         elif len(words)==2:
@@ -119,7 +148,7 @@ def userInputLoop():
                 (file,a,b,c) = vis.getFile(words[1])
                 if file!=None:
                     app.changeSegments(a,b,c)
-                    currentAngles=resetAngles
+                    requestedAngles=resetAngles
                     previousAngles=resetAngles
                     app.drawSegments(resetAngles[0],resetAngles[1],resetAngles[2],resetAngles[3])
             else:
