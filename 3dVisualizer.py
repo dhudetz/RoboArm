@@ -7,17 +7,20 @@ from pandac.PandaModules import *
 from panda3d.core import *
 from direct.interval.IntervalGlobal import *
 import threading
-import sys
+import sys,os
 
 class visualizer(ShowBase):
 
     def __init__(self):
         ShowBase.__init__(self)
         w, h = 750, 750
-        self.thickness=10
+        self.thickness=50
 
         props = WindowProperties()
         props.setSize(w, h)
+
+        mydir = os.path.abspath(sys.path[0])
+        self.mydir = Filename.fromOsSpecific(mydir).getFullpath()
 
         base.win.requestProperties(props)
         base.setBackgroundColor(0,0,0)
@@ -35,6 +38,8 @@ class visualizer(ShowBase):
         self.bSeg.setColor(0, 1 ,0 ,1)
         self.cSeg.setColor(0, 0 ,1 ,1)
         self.segments=(self.aSeg,self.bSeg,self.cSeg)
+        self.models=[]
+        self.doKnife=False
         for s in self.segments:
             s.setThickness(self.thickness)
         self.segmentNodes=[]
@@ -70,6 +75,8 @@ class visualizer(ShowBase):
         for sNode in self.segmentNodes:
             np=NodePath(sNode)
             np.removeNode()
+        for model in self.models:
+            model.removeNode()
         (ar,az,br,bz,cr,cz)=self.back.calculateComponents(t1,t2,t3)
         aVector = LVector3f(ar,0,az)
         bVector = LVector3f(br,0,bz)
@@ -90,20 +97,36 @@ class visualizer(ShowBase):
         self.segmentNodes=[]
         for s in self.segments:
             self.segmentNodes.append(s.create(False))
+        self.models=[]
         for vertex in rotatedVertices:
-            vertexSegment=LineSegs("v")
-            vertexSegment.setColor(1,1,1,1)
-            vertexSegment.setThickness(self.thickness*7)
-            vertexSegment.drawTo(vertex+LVector3f(0,-1,0))
-            vertexSegment.drawTo(vertex+LVector3f(0,1,0))
-            self.segmentNodes.append(vertexSegment.create(False))
+            modelIso = loader.loadModel(self.mydir + "/models/Icosahedron.egg")
+            self.models.append(modelIso)
+            modelIso.setColor(1,1,1,1)
+            modelIso.setPos(vertex)
+            modelIso.setScale(0.6,0.6,0.6)
+            modelIso.reparentTo(self.render)
+        if self.doKnife:
+            modelKnife = loader.loadModel(self.mydir + "/models/Knife.egg")
+            self.models.append(modelKnife)
+            modelKnife.setColor(0.5,0.5,0.5,1)
+            modelKnife.setPos(rotatedVertices[3]-LVector3f(6,0,0))
+            modelKnife.setScale(0.4,0.4,0.4)
+            modelKnife.setHpr(90, t0, 180)
+            modelKnife.reparentTo(self.render)
+            modelBaby = loader.loadModel(self.mydir + "/models/Baby.egg")
+            self.models.append(modelBaby)
+            modelBaby.setPos(LVector3f(-80, 0, 0))
+            modelBaby.setColor(236/256,188/256,180/246,1)
+            modelBaby.setHpr(0, 0, 180)
+            modelBaby.setScale(6,6,6)
+            modelBaby.reparentTo(self.render)
         for sNode in self.segmentNodes:
             render.attachNewNode(sNode)
 
     def spinCameraTask(self, task):
         angleDegrees = task.time * 10.0
         angleRadians = angleDegrees * (pi / 180.0)
-        self.camera.setPos(300 * sin(angleRadians), -300 * cos(angleRadians), -300)
+        self.camera.setPos(200 * sin(angleRadians), -200 * cos(angleRadians), -200)
         self.camera.setHpr(angleDegrees, 45, 180)
         return Task.cont
 
