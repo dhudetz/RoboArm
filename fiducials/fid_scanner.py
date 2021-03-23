@@ -11,7 +11,7 @@ arucoDict = auo.Dictionary_get(auo.DICT_6X6_250)
 arucoParams = auo.DetectorParameters_create()
 
 print("[INFO] starting video stream...")
-vs = VideoStream(src=1).start()
+vs = VideoStream(src=0).start()
 time.sleep(2.0)
 
 while True:
@@ -25,7 +25,6 @@ while True:
 	if len(corners) > 0:
 		# flatten the ArUco IDs list
 		ids = ids.flatten()
-
 		#print('corners: ', corners, ' ids: ', ids)
 		# loop over the detected ArUCo corners
 		for (markerCorner, markerID) in zip(corners, ids):
