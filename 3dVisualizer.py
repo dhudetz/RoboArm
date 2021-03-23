@@ -55,15 +55,15 @@ class visualizer(ShowBase):
         numLines=100
         for x in range(int(-numLines/2),int(numLines/2)):
             gridSegment=LineSegs("g")
-            gridSegment.setColor(0.1,0.1,0.1,1)
-            gridSegment.setThickness(10)
+            gridSegment.setColor(0.3,0.3,0.3,1)
+            gridSegment.setThickness(5)
             gridSegment.drawTo(x*tileSize, (-numLines/2)*tileSize, 0)
             gridSegment.drawTo(x*tileSize, (numLines/2)*tileSize, 0)
             render.attachNewNode(gridSegment.create(False))
         for y in range(int(-numLines/2),int(numLines/2)):
             gridSegment=LineSegs("g")
-            gridSegment.setColor(0.5,0.5,0.5,1)
-            gridSegment.setThickness(2)
+            gridSegment.setColor(0.3,0.3,0.3,1)
+            gridSegment.setThickness(5)
             gridSegment.drawTo((-numLines/2)*tileSize, y*tileSize, 0)
             gridSegment.drawTo((numLines/2)*tileSize, y*tileSize, 0)
             render.attachNewNode(gridSegment.create(False))

@@ -6,19 +6,22 @@ import imutils
 from imutils.video import VideoStream
 import time
 import sys
+from calibration import calibrate
+
 
 arucoDict = auo.Dictionary_get(auo.DICT_6X6_250)
 arucoParams = auo.DetectorParameters_create()
 
+print("use Ctrl+C to exit.")
 print("[INFO] starting video stream...")
-vs = VideoStream(src=1).start()
+vs = VideoStream(src=0).start()
 time.sleep(2.0)
 
 while True:
 	# grab the frame from the threaded video stream and resize it
-	# to have a maximum width of 1000 pixels
+	# to have a maximum width of 1000 pixels with , width=1000.
 	frame = vs.read()
-	frame = imutils.resize(frame, width=1000)
+	frame = imutils.resize(frame)
 	# detect ArUco markers in the input frame
 	(corners, ids, rejected) = auo.detectMarkers(frame,
 		arucoDict, parameters=arucoParams)
@@ -55,7 +58,7 @@ while True:
 			cv2.putText(frame, str(markerID),
 				(topLeft[0], topLeft[1] - 15),
 				cv2.FONT_HERSHEY_SIMPLEX,
-				0.5, (0, 255, 0), 2)
+				0.5, (0, 0, 0), 2)
 
 	cv2.imshow("Frame", frame)
 	key = cv2.waitKey(1) & 0xFF
