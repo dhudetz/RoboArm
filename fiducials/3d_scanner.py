@@ -44,40 +44,43 @@ while True:
 		for i in range(len(rvecs)):
 			rvec = rvecs[i]
 			tvec = tvecs[i]
-			auo.drawAxis(frame,camera_matrix,dist_coeffs,rvec,tvec,0.1)
+			#auo.drawAxis(frame,camera_matrix,dist_coeffs,rvec,tvec,0.1)
 
 			# extract the marker corners (which are always returned
 			# in top-left, top-right, bottom-right, and bottom-left
 			# order)
 		for (markerCorner, markerID) in zip(corners, ids):
-			mcorners = markerCorner.reshape((4, 2))
-			#print('corners: ', corners)
-			(topLeft, topRight, bottomRight, bottomLeft) = mcorners
-			# convert each of the (x, y)-coordinate pairs to integers
-	#			topRight = (int(topRight[0]), int(topRight[1]))
-	#			bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
-	#			bottomLeft = (int(bottomLeft[0]), int(bottomLeft[1]))
-			topLeft = (int(topLeft[0]), int(topLeft[1]))
+			if markerID == 23 or markerID == 203:
+				mcorners = markerCorner.reshape((4, 2))
+				#print('corners: ', corners)
+				(topLeft, topRight, bottomRight, bottomLeft) = mcorners
+				# convert each of the (x, y)-coordinate pairs to integers
+		#			topRight = (int(topRight[0]), int(topRight[1]))
+		#			bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
+		#			bottomLeft = (int(bottomLeft[0]), int(bottomLeft[1]))
+				topLeft = (int(topLeft[0]), int(topLeft[1]))
 
-			# draw the bounding box of the ArUCo detection
-	#			cv2.line(frame, topLeft, topRight, (0, 255, 0), 2)
-	#			cv2.line(frame, topRight, bottomRight, (0, 255, 0), 2)
-	#			cv2.line(frame, bottomRight, bottomLeft, (0, 255, 0), 2)
-	#			cv2.line(frame, bottomLeft, topLeft, (0, 255, 0), 2)
-			# compute and draw the center (x, y)-coordinates of the
-			# ArUco marker
-	#			cX = int((topLeft[0] + bottomRight[0]) / 2.0)
-	#			cY = int((topLeft[1] + bottomRight[1]) / 2.0)
-	#			cv2.circle(frame, (cX, cY), 4, (0, 0, 255), -1)
-			# draw the ArUco marker ID on the frame
-			cv2.putText(frame, str(markerID),
-				(topLeft[0], topLeft[1] - 15),
-				cv2.FONT_HERSHEY_COMPLEX,
-				0.5, (0, 0, 255), 2)
+				# draw the bounding box of the ArUCo detection
+		#			cv2.line(frame, topLeft, topRight, (0, 255, 0), 2)
+		#			cv2.line(frame, topRight, bottomRight, (0, 255, 0), 2)
+		#			cv2.line(frame, bottomRight, bottomLeft, (0, 255, 0), 2)
+		#			cv2.line(frame, bottomLeft, topLeft, (0, 255, 0), 2)
+				# compute and draw the center (x, y)-coordinates of the
+				# ArUco marker
+		#			cX = int((topLeft[0] + bottomRight[0]) / 2.0)
+		#			cY = int((topLeft[1] + bottomRight[1]) / 2.0)
+		#			cv2.circle(frame, (cX, cY), 4, (0, 0, 255), -1)
+				# draw the ArUco marker ID on the frame
+				cv2.putText(frame, str(markerID),
+					(topLeft[0], topLeft[1] - 15),
+					cv2.FONT_HERSHEY_COMPLEX,
+					0.5, (0, 0, 255), 2)
 
 	cv2.imshow("Frame", frame)
 	key = cv2.waitKey(1) & 0xFF
 	if key == ord("q"):
+		cv2.destroyAllWindows()
+		vs.stop()
 		break
 
 cv2.destroyAllWindows()
