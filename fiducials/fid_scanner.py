@@ -9,8 +9,7 @@ import sys
 from calibration import calibrate
 
 
-arucoDict = auo.Dictionary_get(auo.DICT_6X6_250)
-arucoParams = auo.DetectorParameters_create()
+
 
 print("use Ctrl+C to exit.")
 print("[INFO] starting video stream...")
