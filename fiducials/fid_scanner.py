@@ -22,6 +22,8 @@ while True:
 	# to have a maximum width of 1000 pixels with , width=1000.
 	frame = vs.read()
 	frame = imutils.resize(frame)
+	frame = imutils.rotate(frame, 180, scale=1)
+	#image = cv2.rotate(src, cv2.cv2.ROTATE_90_CLOCKWISE)
 	# detect ArUco markers in the input frame
 	(corners, ids, rejected) = auo.detectMarkers(frame,
 		arucoDict, parameters=arucoParams)
@@ -56,13 +58,13 @@ while True:
 			# draw the ArUco marker ID on the frame
 			fid_text = ""
 			if markerID == 0:
-				fid_text = "bottom_right"
-			elif markerID == 1:
 				fid_text = "top_left"
+			elif markerID == 1:
+				fid_text = "bottom_right"
 			elif markerID == 2:
 				fid_text = "BLOCK"
 			elif markerID == 3:
-				fid_text = "bottom_left"
+				fid_text = "top_right"
 			cv2.putText(frame, fid_text,
 				(topLeft[0], topLeft[1] - 15),
 				cv2.FONT_HERSHEY_SIMPLEX,
